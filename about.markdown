@@ -6,6 +6,6 @@ permalink: /gallery/
 {% include gallery_init.html %}
 
 
-{% include gallery_files.html %}
+<div class="galleria">{% include gallery_files.html %}</div>
 
 {% include gallery_theme.html %}

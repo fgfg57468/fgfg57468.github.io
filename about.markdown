@@ -8,4 +8,5 @@ permalink: /gallery/
 
 <div class="galleria">{% include gallery_files.html %}</div>
 
+
 {% include gallery_theme.html %}

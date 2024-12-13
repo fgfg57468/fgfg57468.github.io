@@ -1,7 +1,7 @@
 ---
 layout: page
 title: ГАЛЕРЕЯ
-permalink: /gallery/
+permalink: /about
 ---
 {% include gallery_init.html %}
 

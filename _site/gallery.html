@@ -9,16 +9,16 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Я начал рисовать с августа 2024 года, и вот мои картинки. Я использую темперу своего приготовления на пищевых красителях, гуашь, акварель, акрил и масло." />
 <meta property="og:description" content="Я начал рисовать с августа 2024 года, и вот мои картинки. Я использую темперу своего приготовления на пищевых красителях, гуашь, акварель, акрил и масло." />
-<link rel="canonical" href="/about" />
-<meta property="og:url" content="/about" />
+<link rel="canonical" href="http://localhost:4000/gallery" />
+<meta property="og:url" content="http://localhost:4000/gallery" />
 <meta property="og:site_name" content="картинки рыжего котика" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="ГАЛЕРЕЯ" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","description":"Я начал рисовать с августа 2024 года, и вот мои картинки. Я использую темперу своего приготовления на пищевых красителях, гуашь, акварель, акрил и масло.","headline":"ГАЛЕРЕЯ","url":"/about"}</script>
+{"@context":"https://schema.org","@type":"WebPage","description":"Я начал рисовать с августа 2024 года, и вот мои картинки. Я использую темперу своего приготовления на пищевых красителях, гуашь, акварель, акрил и масло.","headline":"ГАЛЕРЕЯ","url":"http://localhost:4000/gallery"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="картинки рыжего котика" /></head>
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="картинки рыжего котика" /></head>
 <body><header class="site-header" role="banner">
 
   <div class="wrapper"><a class="site-title" rel="author" href="/">картинки рыжего котика</a><nav class="site-nav">
@@ -31,7 +31,7 @@
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/about">ГАЛЕРЕЯ</a></div>
+        <div class="trigger"><a class="page-link" href="/color_harmonizer">ЦВЕТОВЫЕ ГАММЫ</a><a class="page-link" href="/gallery">ГАЛЕРЕЯ</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
@@ -51,31 +51,81 @@
     .galleria{ width: auto; height: 400px; background: #fff }
 </style>
 
-<div class="galleria"><img src="../uploads/pictures/1.jpg" />
-<img src="../uploads/pictures/photo_2024-11-02_00-41-32.jpg" />
-<img src="../uploads/pictures/photo_2024-11-02_01-26-21.jpg" />
-<img src="../uploads/pictures/photo_2024-11-02_01-28-09.jpg" />
-<img src="../uploads/pictures/photo_2024-11-02_01-31-17.jpg" />
-<img src="../uploads/pictures/photo_2024-11-02_23-42-35.jpg" />
-<img src="../uploads/pictures/photo_2024-11-04_16-46-55.jpg" />
-<img src="../uploads/pictures/photo_2024-11-05_01-31-28.jpg" />
-<img src="../uploads/pictures/photo_2024-11-22_00-16-37.jpg" />
-<img src="../uploads/pictures/photo_2024-11-28_01-33-57.jpg" />
-<img src="../uploads/pictures/photo_2024-11-30_07-25-35.jpg" />
-<img src="../uploads/pictures/photo_2024-12-02_01-00-31.jpg" />
-<img src="../uploads/pictures/photo_2024-12-03_03-23-15.jpg" />
-<img src="../uploads/pictures/photo_2024-12-04_03-36-32.jpg" />
-<img src="../uploads/pictures/photo_2024-12-05_04-14-07.jpg" />
-<img src="../uploads/pictures/photo_2024-12-05_18-22-23.jpg" />
-</div>
+<head>
 
 <script>
-    (function() {
+    // Автоматическая обработка при загрузке окна
+    window.onload = async function() {
+        console.log('Начало загрузки галереи...');
+        
+        const cid = 'k51qzi5uqu5dhbp8p4jsbd1zj2hrx3mcgbfj5sii8g5q990u6cpfsa48f3qi77';
+        const cdnUrl = `https://ipfs.io/ipns/${cid}`;
+        
+        try {
+            console.log('Запрос к:', cdnUrl);
+            const response = await fetch(cdnUrl);
+            
+            if (!response.ok) {
+                console.log('Ошибка ответа:', response.status);
+                throw new Error('Failed to fetch');
+            }
+            
+            console.log('Получен ответ, извлекаем текст...');
+            const content = await response.text();
+            console.log('Длина полученного текста:', content.length);
+            
+            const links = extractIpfsLinks(content);
+            console.log('Найдено ссылок:', links.length);
+            
+            createImageGallery(links);
+
+                (function() {
         Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js');
         Galleria.run('.galleria', { theme: 'folio' });
     }());
+
+        } catch (error) {
+            console.error('Ошибка:', error.message);
+        }
+    };
+
+    // Функция для извлечения и обработки ссылок
+    function extractIpfsLinks(html) {
+        console.log('Поиск ссылок в тексте...');
+        const regex = /href=["']\/ipfs\/([^"']+)["']/g;
+        const matches = [];
+        let match;
+        
+        while ((match = regex.exec(html)) !== null) {
+            const path = match[1];
+            const cleanPath = path.split('?filename=photo')[0];
+            matches.push(`https://ipfs.io/ipfs/${cleanPath}`);
+        }
+        
+        console.log('Найдено ссылок:', matches.length);
+        return matches;
+    }
+
+    // Функция для создания галереи изображений
+    function createImageGallery(imageUrls) {
+        console.log('Создание галереи...');
+        const post_content = document.querySelector('.post-content');
+        const gallery = document.createElement('div');
+        gallery.classList.add('galleria');
+        post_content.append(gallery);
+        
+        imageUrls.forEach((src, index) => {
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = `Изображение ${index + 1}`;
+            //img.loading = 'lazy';
+            gallery.appendChild(img);
+        });
+    }
+
 </script>
 
+</head>
 
   </div>
 

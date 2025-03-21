@@ -5,3 +5,78 @@
     .galleria{ width: auto; height: 400px; background: #fff }
 </style>
 
+<head>
+
+<script>
+    // Автоматическая обработка при загрузке окна
+    window.onload = async function() {
+        console.log('Начало загрузки галереи...');
+        
+        const cid = 'k51qzi5uqu5dhbp8p4jsbd1zj2hrx3mcgbfj5sii8g5q990u6cpfsa48f3qi77';
+        const cdnUrl = `https://ipfs.io/ipns/${cid}`;
+        
+        try {
+            console.log('Запрос к:', cdnUrl);
+            const response = await fetch(cdnUrl);
+            
+            if (!response.ok) {
+                console.log('Ошибка ответа:', response.status);
+                throw new Error('Failed to fetch');
+            }
+            
+            console.log('Получен ответ, извлекаем текст...');
+            const content = await response.text();
+            console.log('Длина полученного текста:', content.length);
+            
+            const links = extractIpfsLinks(content);
+            console.log('Найдено ссылок:', links.length);
+            
+            createImageGallery(links);
+
+                (function() {
+        Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js');
+        Galleria.run('.galleria', { theme: 'folio' });
+    }());
+
+        } catch (error) {
+            console.error('Ошибка:', error.message);
+        }
+    };
+
+    // Функция для извлечения и обработки ссылок
+    function extractIpfsLinks(html) {
+        console.log('Поиск ссылок в тексте...');
+        const regex = /href=["']\/ipfs\/([^"']+)["']/g;
+        const matches = [];
+        let match;
+        
+        while ((match = regex.exec(html)) !== null) {
+            const path = match[1];
+            const cleanPath = path.split('?filename=photo')[0];
+            matches.push(`https://ipfs.io/ipfs/${cleanPath}`);
+        }
+        
+        console.log('Найдено ссылок:', matches.length);
+        return matches;
+    }
+
+    // Функция для создания галереи изображений
+    function createImageGallery(imageUrls) {
+        console.log('Создание галереи...');
+        const post_content = document.querySelector('.post-content');
+        const gallery = document.createElement('div');
+        gallery.classList.add('galleria');
+        post_content.append(gallery);
+        
+        imageUrls.forEach((src, index) => {
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = `Изображение ${index + 1}`;
+            //img.loading = 'lazy';
+            gallery.appendChild(img);
+        });
+    }
+
+</script>
+
+</head>

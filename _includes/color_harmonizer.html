@@ -1,0 +1,278 @@
+<html>
+<head>
+    <title>Интерактивный цветовой пикер</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            font-family: Arial, sans-serif;
+        }
+        
+        .color-picker {
+            margin: 20px 0;
+        }
+        
+        .palette-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .color-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .color-block {
+            width: 100px;
+            height: 50px;
+            border: 1px solid #ccc;
+            margin: 1px 0;
+            position: relative;
+        }
+        
+        .color-label {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+        }
+        
+        select {
+            padding: 5px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="color-picker">
+            <input type="color" id="baseColor" value="#FF5733">
+            <select id="harmonyType">
+                <option value="monochromatic">Монохромная</option>
+                <option value="complementary">Дополнительная</option>
+                <option value="analogous">Аналогичная</option>
+                <option value="triadic">Триадическая</option>
+                <option value="tetradic">Тетрадическая</option>
+            </select>
+        </div>
+        
+        <div class="palette-container" id="paletteContainer"></div>
+    </div>
+
+    <script>
+        class ColorHarmony {
+            constructor() {
+                this.baseColor = '#FF5733';
+                this.harmonyType = 'monochromatic';
+            }
+
+            hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            }
+
+            rgbToHex(r, g, b) {
+                return '#' + [r, g, b].map(x => {
+                    const hex = x.toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('');
+            }
+
+            hslToRgb(h, s, l) {
+                l /= 100;
+                s /= 100;
+                const a = s * Math.min(l, 1 - l);
+                const f = n => {
+                    const k = (n + h / 30) % 12;
+                    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                    return Math.round(255 * color);
+                };
+                return {
+                    r: f(0),
+                    g: f(8),
+                    b: f(4)
+                };
+            }
+
+            rgbToHsl(r, g, b) {
+                r /= 255;
+                g /= 255;
+                b /= 255;
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                let h, s, l = (max + min) / 2;
+
+                if (max === min) {
+                    h = s = 0;
+                } else {
+                    const d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch (max) {
+                        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                        case g: h = (b - r) / d + 2; break;
+                        case b: h = (r - g) / d + 4; break;
+                    }
+                    h /= 6;
+                }
+
+                return {
+                    h: Math.round(h * 360),
+                    s: Math.round(s * 100),
+                    l: Math.round(l * 100)
+                };
+            }
+
+            generateHarmony() {
+                const rgb = this.hexToRgb(this.baseColor);
+                const hsl = this.rgbToHsl(rgb.r, rgb.g, rgb.b);
+                const palette = [];
+
+                switch (this.harmonyType) {
+                    case 'monochromatic':
+                        for (let i = -2; i <= 2; i++) {
+                            const newL = Math.max(10, Math.min(90, hsl.l + i * 15));
+                            const color = this.hslToRgb(hsl.h, hsl.s, newL);
+                            palette.push(this.rgbToHex(color.r, color.g, color.b));
+                        }
+                        break;
+
+                    case 'complementary':
+                        palette.push(this.baseColor);
+                        const compHsl = { ...hsl };
+                        compHsl.h = (hsl.h + 180) % 360;
+                        const compColor = this.hslToRgb(compHsl.h, compHsl.s, compHsl.l);
+                        palette.push(this.rgbToHex(compColor.r, compColor.g, compColor.b));
+                        break;
+
+                    case 'analogous':
+                        for (let i = -2; i <= 2; i++) {
+                            const newH = (hsl.h + i * 30) % 360;
+                            const color = this.hslToRgb(newH, hsl.s, hsl.l);
+                            palette.push(this.rgbToHex(color.r, color.g, color.b));
+                        }
+                        break;
+
+                    case 'triadic':
+                        for (let i = 0; i < 3; i++) {
+                            const newH = (hsl.h + i * 120) % 360;
+                            const color = this.hslToRgb(newH, hsl.s, hsl.l);
+                            palette.push(this.rgbToHex(color.r, color.g, color.b));
+                        }
+                        break;
+
+                    case 'tetradic':
+                        for (let i = 0; i < 4; i++) {
+                            const newH = (hsl.h + i * 90) % 360;
+                            const color = this.hslToRgb(newH, hsl.s, hsl.l);
+                            palette.push(this.rgbToHex(color.r, color.g, color.b));
+                        }
+                        break;
+                }
+
+                return palette;
+            }
+
+            generateTones(color) {
+                const rgb = this.hexToRgb(color);
+                const hsl = this.rgbToHsl(rgb.r, rgb.g, rgb.b);
+                const tones = {
+                    shades: [],
+                    tints: []
+                };
+
+                // Generate shades
+                for (let i = 1; i <= 5; i++) {
+                    const newL = Math.max(5, hsl.l - i * 12);
+                    const color = this.hslToRgb(hsl.h, hsl.s, newL);
+                    tones.shades.push(this.rgbToHex(color.r, color.g, color.b));
+                }
+
+                // Generate tints
+                for (let i = 1; i <= 5; i++) {
+                    const newL = Math.min(95, hsl.l + i * 8);
+                    const color = this.hslToRgb(hsl.h, hsl.s, newL);
+                    tones.tints.push(this.rgbToHex(color.r, color.g, color.b));
+                }
+
+                return tones;
+            }
+        }
+
+        // Initialize color harmony
+        const harmony = new ColorHarmony();
+        const container = document.getElementById('paletteContainer');
+
+        // Update palette function
+        function updatePalette() {
+            harmony.baseColor = document.getElementById('baseColor').value;
+            harmony.harmonyType = document.getElementById('harmonyType').value;
+            
+            container.innerHTML = '';
+            
+            const palette = harmony.generateHarmony();
+            palette.forEach(color => {
+                const group = document.createElement('div');
+                group.className = 'color-group';
+                
+                // Add base color
+                const baseBlock = createColorBlock(color);
+                group.appendChild(baseBlock);
+                
+                // Create container for tones
+                const tonesContainer = document.createElement('div');
+                tonesContainer.className = 'tones-container';
+                tonesContainer.style.display = 'grid';
+                tonesContainer.style.gridTemplateColumns = 'repeat(5, 1fr)';
+                tonesContainer.style.gap = '5px';
+                tonesContainer.style.marginTop = '10px';
+                
+                // Add shades (first row)
+                const tones = harmony.generateTones(color);
+                tones.shades.forEach(shade => {
+                    const block = createColorBlock(shade);
+                    tonesContainer.appendChild(block);
+                });
+                
+                // Add tints (second row)
+                tones.tints.forEach(tint => {
+                    const block = createColorBlock(tint);
+                    tonesContainer.appendChild(block);
+                });
+                
+                group.appendChild(tonesContainer);
+                container.appendChild(group);
+            });
+        }
+
+        // Create color block function
+        function createColorBlock(color) {
+            const block = document.createElement('div');
+            block.className = 'color-block';
+            block.style.backgroundColor = color;
+            
+            const label = document.createElement('div');
+            label.className = 'color-label';
+            label.textContent = color;
+            
+            block.appendChild(label);
+            return block;
+        }
+
+        // Add event listeners
+        document.getElementById('baseColor').addEventListener('input', updatePalette);
+        document.getElementById('harmonyType').addEventListener('change', updatePalette);
+
+        // Initial update
+        updatePalette();
+    </script>
+</body>
+</html>

@@ -94,6 +94,7 @@
         
         .editor-body {
             display: flex;
+            flex-direction: column;
             gap: 30px;
         }
         
@@ -119,16 +120,22 @@
         }
         
         #editor-controls {
-            width: 350px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 25px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 15px;
+        }
+        
+        .controls-section {
+            flex: 1;
+            min-width: 300px;
+            max-width: 100%;
         }
         
         /* Стили для палитры цветов */
         .palette-section {
-            margin-top: 30px;
+            margin-top: 20px;
             padding: 20px;
             background: white;
             border-radius: 10px;
@@ -183,8 +190,9 @@
         /* Стили для цветового круга */
         #color-picker-container {
             width: 100%;
-            height: 125px; /* Уменьшено в 2 раза */
-            margin: 15px 0;
+            max-width: 400px;
+            height: 125px;
+            margin: 15px auto;
         }
         .color-info {
             display: flex;
@@ -302,6 +310,82 @@
             align-items: center;
             justify-content: center;
         }
+        
+        /* Группировка элементов управления */
+        .color-controls-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+        }
+        
+        .color-picker-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .selection-section {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .export-section {
+            flex-basis: 100%;
+            margin-top: 15px;
+        }
+        
+        /* Исправления для камеры */
+        .camera-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 15px;
+        }
+        
+        #cameraPreview {
+            width: 100%;
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+            background: #000;
+            border-radius: 8px;
+        }
+        
+        .camera-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        /* Стили для кнопки загрузки */
+        .file-upload-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-upload-button {
+            padding: 8px 15px;
+            background: #607D8B;
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        #imageInput {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -316,7 +400,10 @@
         <div class="input-section">
             <h2 class="section-title">Исходное изображение</h2>
             <canvas id="inputCanvas"></canvas>
-            <div class="controls" id="fileControls">
+            
+            <!-- Исправленный блок загрузки файла -->
+            <div class="file-upload-wrapper">
+                <div class="file-upload-button">Выбрать файл</div>
                 <input type="file" id="imageInput" accept="image/*">
             </div>
             
@@ -373,37 +460,40 @@
                 </div>
             </div>
             
+            <!-- Перемещенная панель управления под изображение -->
             <div id="editor-controls">
-                <div class="controls-section">
-                    <h3>Цветовой круг</h3>
-                    <div id="color-picker-container"></div>
+                <div class="color-controls-group">
+                    <div class="color-picker-section controls-section">
+                        <h3>Цветовой круг</h3>
+                        <div id="color-picker-container"></div>
+                        
+                        <div class="color-info">
+                            <div class="color-display" id="current-color"></div>
+                            <div class="color-values">
+                                <div class="color-value" id="hex-value">HEX: #FFFFFF</div>
+                                <div class="color-value" id="rgb-value">RGB: 255, 255, 255</div>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <div class="color-info">
-                        <div class="color-display" id="current-color"></div>
-                        <div class="color-values">
-                            <div class="color-value" id="hex-value">HEX: #FFFFFF</div>
-                            <div class="color-value" id="rgb-value">RGB: 255, 255, 255</div>
+                    <div class="selection-section controls-section">
+                        <div class="selection-info">
+                            <h3>Выделенная зона</h3>
+                            <button id="clear-selection" class="editor-btn btn-primary">Снять выделение</button>
+                        </div>
+                        <p>Выбрано элементов: <strong id="selected-count">0</strong></p>
+                        <p>Исходный цвет: <span id="original-color" style="display:inline-block; width:20px; height:20px; vertical-align:middle;"></span></p>
+                        
+                        <div class="controls-buttons">
+                            <button id="original-color-btn" class="editor-btn">
+                                <span>Восстановить исходный цвет</span>
+                                <div class="original-color-display"></div>
+                            </button>
                         </div>
                     </div>
                 </div>
                 
-                <div class="controls-section">
-                    <div class="selection-info">
-                        <h3>Выделенная зона</h3>
-                        <button id="clear-selection" class="editor-btn btn-primary">Снять выделение</button>
-                    </div>
-                    <p>Выбрано элементов: <strong id="selected-count">0</strong></p>
-                    <p>Исходный цвет: <span id="original-color" style="display:inline-block; width:20px; height:20px; vertical-align:middle;"></span></p>
-                    
-                    <div class="controls-buttons">
-                        <button id="original-color-btn" class="editor-btn">
-                            <span>Восстановить исходный цвет</span>
-                            <div class="original-color-display"></div>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="controls-section">
+                <div class="export-section controls-section">
                     <h3>Экспорт результата</h3>
                     <div class="controls-buttons">
                         <button id="download-edited-svg" class="editor-btn btn-success">Скачать SVG</button>
@@ -445,7 +535,6 @@
             const cameraPreview = document.getElementById('cameraPreview');
             const captureBtn = document.getElementById('captureBtn');
             const cancelCameraBtn = document.getElementById('cancelCameraBtn');
-            const fileControls = document.getElementById('fileControls');
 
             // Контексты для canvas
             const inputCtx = inputCanvas.getContext('2d');
@@ -505,10 +594,15 @@
 
             // Переключение между режимами камеры и загрузки
             startCameraBtn.addEventListener('click', startCamera);
+            
+            // Исправление: кнопка "Загрузить файл" теперь работает
             uploadFileBtn.addEventListener('click', () => {
-                fileControls.style.display = 'block';
+                // Скрываем камеру если открыта
                 cameraSection.style.display = 'none';
                 closeCamera();
+                
+                // Активируем клик по скрытому input
+                imageInput.click();
             });
 
             // Загрузка файла
@@ -553,8 +647,11 @@
             // Запуск камеры
             async function startCamera() {
                 try {
-                    fileControls.style.display = 'none';
-                    cameraSection.style.display = 'block';
+                    // Скрываем другие элементы
+                    document.querySelector('.file-upload-wrapper').style.display = 'none';
+                    
+                    // Показываем секцию камеры
+                    cameraSection.style.display = 'flex';
                     
                     // Остановить предыдущий поток
                     if (stream) {
@@ -573,11 +670,18 @@
                     
                     cameraPreview.srcObject = stream;
                     
+                    // Адаптация для мобильных устройств
+                    cameraPreview.onloadedmetadata = function() {
+                        // Установка соотношения сторон
+                        const aspectRatio = cameraPreview.videoWidth / cameraPreview.videoHeight;
+                        cameraPreview.style.aspectRatio = aspectRatio;
+                    };
+                    
                 } catch (err) {
                     console.error("Camera error:", err);
                     alert('Не удалось получить доступ к камере: ' + err.message);
                     cameraSection.style.display = 'none';
-                    fileControls.style.display = 'block';
+                    document.querySelector('.file-upload-wrapper').style.display = 'block';
                 }
             }
 
@@ -607,7 +711,7 @@
                     stream = null;
                 }
                 cameraSection.style.display = 'none';
-                fileControls.style.display = 'block';
+                document.querySelector('.file-upload-wrapper').style.display = 'block';
             }
 
             // Загрузить изображение
@@ -649,6 +753,9 @@
                     // Скрываем редактор и палитру
                     editorContainer.style.display = 'none';
                     paletteSection.style.display = 'none';
+                    
+                    // Показываем кнопку загрузки
+                    document.querySelector('.file-upload-wrapper').style.display = 'block';
                 };
                 img.src = src;
             }
@@ -897,8 +1004,8 @@
                             scale: 1,
                             linefilter: true,
                             strokewidth: 1,
-                            blurradius: 0,
-                            blurdelta: 20
+                            blurradius: 20,
+                            blurdelta: 128
                         }
                     );
                 });
@@ -1012,7 +1119,7 @@
             // Инициализация цветового круга
             function initColorPicker() {
                 colorPicker = new iro.ColorPicker('#color-picker-container', {
-                    width: 140, // Уменьшено в 2 раза
+                    width: 140,
                     color: "#3498db",
                     layout: [
                         { 

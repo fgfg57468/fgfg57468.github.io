@@ -26,8 +26,6 @@ url: "" # the base hostname & protocol for your site, e.g. http://example.com
 # Build settings
 theme: minima
 
-plugins:
-  - jekyll-redirect-from
 
 # Exclude from processing.
 # The following items will not be processed, by default.
@@ -48,3 +46,9 @@ plugins:
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+
+encoding: utf-8
+markdown: kramdown
+kramdown:
+  input: GFM
+  show_warnings: true

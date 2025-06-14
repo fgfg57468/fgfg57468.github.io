@@ -4,7 +4,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
 <title>ГАЛЕРЕЯ | картинки рыжего котика</title>
-<meta name="generator" content="Jekyll v4.3.4" />
+<meta name="generator" content="Jekyll v4.4.1" />
 <meta property="og:title" content="ГАЛЕРЕЯ" />
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="Я начал рисовать с августа 2024 года, и вот мои картинки. Я использую темперу своего приготовления на пищевых красителях, гуашь, акварель, акрил и масло." />
@@ -31,7 +31,7 @@
           </span>
         </label>
 
-        <div class="trigger"><a class="page-link" href="/color_harmonizer">ЦВЕТОВЫЕ ГАММЫ</a><a class="page-link" href="/gallery">ГАЛЕРЕЯ</a></div>
+        <div class="trigger"><a class="page-link" href="/color_harmonizer">ЦВЕТОВЫЕ ГАММЫ</a><a class="page-link" href="/gallery">ГАЛЕРЕЯ</a><a class="page-link" href="/svgtracer">Трассировка SVG</a></div>
       </nav></div>
 </header>
 <main class="page-content" aria-label="Content">
@@ -54,61 +54,43 @@
 <head>
 
 <script>
-    // Автоматическая обработка при загрузке окна
     window.onload = async function() {
-        console.log('Начало загрузки галереи...');
-        
-        const cid = 'k51qzi5uqu5dhbp8p4jsbd1zj2hrx3mcgbfj5sii8g5q990u6cpfsa48f3qi77';
-        const cdnUrl = `https://ipfs.io/ipns/${cid}`;
+        const cid = 'Qmcgg62uZYYcARDZebK346LBtetiGuNsuHzRz6n9ntcqx9';
+        const cdnUrl = `https://black-obliged-cricket-162.mypinata.cloud/ipfs/${cid}`;
         
         try {
-            console.log('Запрос к:', cdnUrl);
             const response = await fetch(cdnUrl);
+            if (!response.ok) throw new Error('Failed to fetch');
             
-            if (!response.ok) {
-                console.log('Ошибка ответа:', response.status);
-                throw new Error('Failed to fetch');
-            }
-            
-            console.log('Получен ответ, извлекаем текст...');
             const content = await response.text();
-            console.log('Длина полученного текста:', content.length);
-            
             const links = extractIpfsLinks(content);
-            console.log('Найдено ссылок:', links.length);
-            
             createImageGallery(links);
 
-                (function() {
-        Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js');
-        Galleria.run('.galleria', { theme: 'folio' });
-    }());
+            Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js');
+            Galleria.run('.galleria', { theme: 'folio' });
 
         } catch (error) {
             console.error('Ошибка:', error.message);
         }
     };
 
-    // Функция для извлечения и обработки ссылок
     function extractIpfsLinks(html) {
-        console.log('Поиск ссылок в тексте...');
         const regex = /href=["']\/ipfs\/([^"']+)["']/g;
         const matches = [];
         let match;
         
         while ((match = regex.exec(html)) !== null) {
             const path = match[1];
-            const cleanPath = path.split('?filename=photo')[0];
-            matches.push(`https://ipfs.io/ipfs/${cleanPath}`);
+            const cleanPath = path.split('?')[0];
+            
+            if (/\.(jpg|jpeg|png|gif|webp)$/i.test(cleanPath)) {
+                matches.push(`https://black-obliged-cricket-162.mypinata.cloud/ipfs/${cleanPath}`);
+            }
         }
-        
-        console.log('Найдено ссылок:', matches.length);
         return matches;
     }
 
-    // Функция для создания галереи изображений
     function createImageGallery(imageUrls) {
-        console.log('Создание галереи...');
         const post_content = document.querySelector('.post-content');
         const gallery = document.createElement('div');
         gallery.classList.add('galleria');
@@ -118,14 +100,13 @@
             const img = document.createElement('img');
             img.src = src;
             img.alt = `Изображение ${index + 1}`;
-            //img.loading = 'lazy';
             gallery.appendChild(img);
         });
     }
-
 </script>
 
 </head>
+
 
   </div>
 

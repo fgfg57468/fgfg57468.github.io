@@ -64,3 +64,5 @@ nav:
     url: /svgtracer
   - title: цветовые гармонии
     url: /color_harmonizer
+  - title: тг парсер
+    url: /tg

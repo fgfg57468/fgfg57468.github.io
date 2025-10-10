@@ -6,4 +6,4 @@ layout: page
 
 ---
 
-{% include tg_parser.html %}
+{% include mastodon_parser.html %}

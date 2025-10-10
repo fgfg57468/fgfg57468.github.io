@@ -1,6 +1,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/galleria.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+
 <style>
     .galleria{ width: auto; height: 400px; background: #fff }
 </style>
@@ -47,8 +49,14 @@
     function createImageGallery(imageUrls) {
         const post_content = document.querySelector('.post-content');
         const gallery = document.createElement('div');
+
+        let context = document.createElement('div');
+        context.innerHTML += marked.parse('# Marked in the browser\n\nRendered by **marked**.');
+
         gallery.classList.add('galleria');
-        post_content.append(gallery);
+        context.appendChild(gallery);
+        post_content.append(context);
+
         
         imageUrls.forEach((src, index) => {
             const img = document.createElement('img');
@@ -56,6 +64,7 @@
             img.alt = `Изображение ${index + 1}`;
             gallery.appendChild(img);
         });
+
     }
 </script>
 

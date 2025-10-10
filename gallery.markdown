@@ -1,6 +1,9 @@
 ---
 layout: page
-title: ГАЛЕРЕЯ
+title: галерея
 permalink: /gallery
 ---
+
+## вне серий
+
 {% include gallery_init.html %}

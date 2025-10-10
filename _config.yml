@@ -52,3 +52,15 @@ markdown: kramdown
 kramdown:
   input: GFM
   show_warnings: true
+
+nav:
+  - title: главная
+    url: /
+  - title: блог
+    url: /blog
+  - title: галерея
+    url: /gallery
+  - title: трассировщик изображения
+    url: /svgtracer
+  - title: цветовые гармонии
+    url: /color_harmonizer

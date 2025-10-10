@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Трассировка SVG
+title: трассировка изображения
 permalink: /svgtracer
 ---
 {% include svgtracer.html %}

@@ -6,4 +6,4 @@ layout: page
 
 ---
 
-{% include gallery_init.html %}
+{% include tg_parser.html %}

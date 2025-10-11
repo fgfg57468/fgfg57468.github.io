@@ -4,6 +4,6 @@ title: галерея
 permalink: /gallery
 ---
 
-## вне серий
+## архив
 
 {% include gallery_init.html %}

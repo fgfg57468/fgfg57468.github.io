@@ -1,20 +1,58 @@
 <style>
-  .site-nav{
-  display: flex;
-  justify-content: center; 
-  float: none;
-}
+  .site-header {
+    position: fixed; /* или sticky */
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  /* Стили для мобильных */
+  @media (max-width: 767px) {
+    .site-nav {
+      padding: 10px;
+    }
+    
+    .nav-trigger:checked ~ .trigger {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  }
+
+  /* Стили для десктопов */
+  @media (min-width: 768px) {
+    .site-nav{
+      display: flex;
+      justify-content: center; 
+      float: none;
+    }
+  }
+
+  /* Отступ для контента */
+  main {
+    margin-top: 70px; /* подстройте под высоту меню */
+  }
 </style>
 
 <header class="site-header" role="banner">
+  <nav class="site-nav">
+    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+    <!-- The label for the checkbox is often here. It's missing from your code. -->
+    <label for="nav-trigger">
+      <!-- Icon or the word "Menu" goes here -->
+    </label>
 
-<nav class="site-nav">
-        <input type="checkbox" id="nav-trigger" class="nav-trigger">
-
-        <div class="trigger">         
-  {% for item in site.nav %}
-    <a class="page-link" href="{{ item.url }}">{{ item.title }}</a>
-  {% endfor %}
-
+    <div class="trigger">
+      {% for item in site.nav %}
+        <a class="page-link" href="{{ item.url }}">{{ item.title }}</a>
+      {% endfor %}
+    </div>
   </nav>
 </header>

@@ -22,7 +22,7 @@
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="картинки рыжего котика" /></head>
 <body><style>
   .site-header {
-    position: fixed; /* или sticky */
+    
     top: 0;
     width: 100%;
     z-index: 1000;
@@ -32,14 +32,18 @@
 
   /* Стили для мобильных */
   @media (max-width: 767px) {
+    .site-header {
+    visibility: hidden;
+  }
     .site-nav {
-      padding: 10px;
+      visibility: visible;
+      padding: 0px;
     }
     
     .nav-trigger:checked ~ .trigger {
       display: flex;
       flex-direction: column;
-      position: absolute;
+      position: sticky;
       top: 100%;
       left: 0;
       width: 100%;

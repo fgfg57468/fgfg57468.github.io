@@ -3,8 +3,7 @@
 # To modify the layout, see https://jekyllrb.com/docs/themes/#overriding-theme-defaults
 
 layout: page
-
+permalink: /openrouter
 ---
 
-
-{% include mastodon_parser.html %}
+{% include openrouter.html %}

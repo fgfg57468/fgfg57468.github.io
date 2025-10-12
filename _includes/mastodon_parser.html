@@ -1,4 +1,3 @@
-
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -8,17 +7,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/classic/galleria.classic.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.css">
     <style>
+        /* Сбрасываем отступы по умолчанию */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+        
         .galleria-container { 
             width: 100%; 
+            max-width: 800px; /* Ограничиваем максимальную ширину галереи */
             height: 400px; 
-            margin: 20px 0;
+            margin: 20px auto; /* Центрируем галерею */
             display: block; 
         }
         .post-group { 
             margin: 20px 0; 
             padding: 15px; 
             border: 1px solid #ddd; 
-            border-radius: 8px; 
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Центрируем все дочерние элементы */
         }
         .hidden { display: none; }
         .no-title { color: #999; font-style: italic; }
@@ -27,6 +38,12 @@
             white-space: pre-wrap;
             font-family: inherit;
             line-height: 1.4;
+            text-align: justify;
+            width: 100%; /* Занимает всю доступную ширину контейнера */
+            max-width: 800px; /* Такая же максимальная ширина как у галереи */
+            margin: 0 auto; /* Центрируем текстовый блок */
+            padding: 0 10px;
+            box-sizing: border-box;
         }
         
         /* Новые стили для центрирования и загрузки */
@@ -70,6 +87,30 @@
             color: #999;
             font-style: italic;
             padding: 10px;
+            width: 100%;
+            max-width: 800px; /* Такая же ширина как у галереи */
+        }
+        
+        /* Центрируем заголовки групп */
+        .post-group h3 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 800px; /* Такая же ширина как у галереи */
+        }
+        
+        /* Центрируем статистику в конце */
+        .main-container > div:last-child {
+            text-align: center;
+        }
+
+        /* Стили для контейнера галереи */
+        .gallery-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            padding-left: 10%;
         }
     </style>
 </head>
@@ -92,12 +133,12 @@
             account_id: '115350825601639031'
         };
 
-        // === ФУНКЦИЯ ДЛЯ ПАРСИНГА НУМЕРОВАННЫХ ПОДПИСЕЙ ===
+        // === УЛУЧШЕННАЯ ФУНКЦИЯ ДЛЯ ПАРСИНГА НУМЕРОВАННЫХ ПОДПИСЕЙ ===
         function parseNumberedCaptions(text) {
             const captions = [];
             
-            // Регулярное выражение для поиска нумерации "1. текст" до следующей нумерации
-            const regex = /^(\d+)\.\s+(.+?)(?=\n\d+\.\s+|\n*$)/gms;
+            // Более гибкое регулярное выражение для поиска нумерации в любом месте текста
+            const regex = /(?:^|\n)(\d+)\.\s+([^\n]+)/g;
             
             let match;
             while ((match = regex.exec(text)) !== null) {
@@ -115,7 +156,8 @@
                 }
             }
             
-            return captions;
+            // Сортируем по номеру для правильного порядка
+            return captions.sort((a, b) => a.number - b.number);
         }
 
         // === ФУНКЦИЯ ДЛЯ КОРРЕКТНОЙ ОЧИСТКИ HTML С СОХРАНЕНИЕМ ФОРМАТИРОВАНИЯ ===
@@ -221,7 +263,7 @@
             return processedPosts;
         }
 
-        // === ФУНКЦИЯ ГРУППИРОВКИ ПО ХЕШТЕГАМ ===
+        // === УЛУЧШЕННАЯ ФУНКЦИЯ ГРУППИРОВКИ ПО ХЕШТЕГАМ ===
         function groupPostsByHashtags(posts) {
             const groups = {};
             let renderOrderPost = null;
@@ -254,7 +296,8 @@
                         combinedText: '', 
                         allImages: [],
                         allImageCaptions: [],
-                        title: ''
+                        title: '',
+                        allNumberedCaptions: [] // Новое поле для всех нумерованных подписей группы
                     };
                 }
                 groups[groupKey].posts.push(post);
@@ -279,24 +322,45 @@
                     group.combinedText = '';
                 }
                 
+                // === ВАЖНОЕ ИЗМЕНЕНИЕ: Собираем ВСЕ нумерованные подписи из ВСЕХ постов группы ===
+                const allGroupCaptions = [];
+                group.posts.forEach(post => {
+                    const postCaptions = parseNumberedCaptions(post.text);
+                    allGroupCaptions.push(...postCaptions);
+                });
+                
+                // Убираем дубликаты по номеру, сохраняя порядок
+                const uniqueCaptions = [];
+                const usedNumbers = new Set();
+                
+                allGroupCaptions.sort((a, b) => a.number - b.number).forEach(caption => {
+                    if (!usedNumbers.has(caption.number)) {
+                        uniqueCaptions.push(caption);
+                        usedNumbers.add(caption.number);
+                    }
+                });
+                
+                group.allNumberedCaptions = uniqueCaptions;
+                
                 // Собираем все изображения и их подписи
                 group.allImages = [];
                 group.allImageCaptions = [];
                 
                 group.posts.forEach(post => {
-                    // Добавляем изображения с их подписями
                     post.images.forEach((imageUrl, index) => {
                         group.allImages.push(imageUrl);
                         
-                        // Ищем подпись для этого изображения по порядковому номеру
+                        // Используем ГЛОБАЛЬНЫЙ индекс изображения во всей группе
+                        const globalImageIndex = group.allImages.length - 1;
+                        
+                        // Ищем подпись из собранных нумерованных подписей группы
                         let caption = '';
-                        if (post.numberedCaptions && post.numberedCaptions.length > index) {
-                            // Используем подпись по порядковому номеру
-                            const captionData = post.numberedCaptions[index];
+                        if (group.allNumberedCaptions && group.allNumberedCaptions.length > globalImageIndex) {
+                            const captionData = group.allNumberedCaptions[globalImageIndex];
                             caption = `${captionData.number}. ${captionData.text}`;
                         } else {
-                            // Если подписей меньше чем изображений, используем заголовок группы
-                            caption = `${index + 1}. Изображение ${index + 1}`;
+                            // Fallback: используем последовательную нумерацию
+                            caption = `${globalImageIndex + 1}. Изображение ${globalImageIndex + 1}`;
                         }
                         
                         group.allImageCaptions.push(caption);
@@ -408,7 +472,7 @@
                         <h3 class="${titleClass}">${group.title}</h3>
                         ${group.combinedText ? `<div class="post-text">${group.combinedText}</div>` : ''}
                         ${group.allImages.length > 0 ? 
-                            `<div id="${galleryId}" class="galleria-container"></div>` : 
+                            `<div class="gallery-wrapper"><div id="${galleryId}" class="galleria-container"></div></div>` : 
                             '<div class="no-images">Нет изображений в этой группе</div>'
                         }
                     `;

@@ -1,0 +1,128 @@
+<script>
+
+(function() {
+    // Ваш API-ключ OpenRouter и настройки модели
+    const API_KEY = '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';
+    const MODEL = 'deepseek/deepseek-chat';
+    
+    // Функция для создания и вставки кнопки в навигационную панель
+    function initTranslateWidget() {
+        // Поиск элемента <nav> внутри <header> для вставки кнопки
+        const navElement = document.querySelector('header nav');
+        if (!navElement) {
+            console.warn('Элемент <nav> внутри <header> не найден. Виджет перевода не будет отображен.');
+            return;
+        }
+
+        // Создание контейнера для кнопки
+        const widgetContainer = document.createElement('div');
+        widgetContainer.className = 'translate-widget';
+        
+        // Создание выпадающего списка языков
+        const languageSelect = document.createElement('select');
+        languageSelect.innerHTML = `
+            <option value="ru">Русский</option>
+            <option value="en">English</option>
+            <option value="de">Deutsch</option>
+            <option value="fr">Français</option>
+        `;
+        
+        // Добавление элементов в DOM
+        widgetContainer.appendChild(languageSelect);
+        navElement.appendChild(widgetContainer);
+        
+        // Обработчик события выбора языка
+        languageSelect.addEventListener('change', function() {
+            translatePage(this.value);
+        });
+    }
+
+    // Основная функция перевода страницы
+    async function translatePage(targetLanguage) {
+        // 1. Сбор текста со страницы (упрощенный пример)
+        const textElements = collectTextElements();
+        const textsToTranslate = textElements.map(item => item.textContent);
+        
+        try {
+            // 2. Отправка запроса к API OpenRouter
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: MODEL,
+                    messages: [
+                        {
+                            role: "system",
+                            content: "Ты - профессиональный переводчик. Переводи предоставленный текст точно и естественно."
+                        },
+                        {
+                            role: "user", 
+                            content: `Переведи следующий текст на ${getLanguageName(targetLanguage)}:\n\n${textsToTranslate.join('\n')}`
+                        }
+                    ],
+                    max_tokens: 4000
+                })
+            });
+            
+            if (!response.ok) throw new Error(`Ошибка API: ${response.status}`);
+            
+            const data = await response.json();
+            if (data.choices && data.choices[0].message) {
+                // 3. Замена текста на странице
+                applyTranslation(textElements, data.choices[0].message.content);
+            }
+        } catch (error) {
+            console.error('Ошибка перевода:', error);
+        }
+    }
+
+    // Вспомогательные функции
+    function collectTextElements() {
+        // Логика сбора текстовых элементов со страницы
+        // Возвращает массив DOM-элементов, содержащих текст для перевода
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+            if (node.parentElement.tagName !== 'SCRIPT' && 
+                node.parentElement.tagName !== 'STYLE' &&
+                node.textContent.trim() !== '') {
+                textNodes.push(node.parentElement);
+            }
+        }
+        return textNodes;
+    }
+
+    function applyTranslation(elements, translatedText) {
+        // Логика применения перевода к элементам страницы
+        const translations = translatedText.split('\n');
+        elements.forEach((element, index) => {
+            if (translations[index]) {
+                element.textContent = translations[index];
+            }
+        });
+    }
+
+    function getLanguageName(code) {
+        const languages = { 'en': 'английский', 'de': 'немецкий', 'fr': 'французский' };
+        return languages[code] || 'английский';
+    }
+
+    // Инициализация виджета после загрузки DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTranslateWidget);
+    } else {
+        initTranslateWidget();
+    }
+})();
+
+</script>

@@ -18,8 +18,8 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: картинки рыжего котика
-description: Я начал рисовать с августа 2024 года, и вот мои картинки. Я использую темперу своего приготовления на пищевых красителях, гуашь, акварель, акрил и масло.
+title: Демид Морозов
+description: Я начал рисовать с августа 2024 года. Пробовал работать в живописи и графике с большинством материалов. 
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 
@@ -60,9 +60,11 @@ nav:
     url: /blog
   - title: галерея
     url: /gallery
-  - title: трассировщик изображения
-    url: /svgtracer
-  - title: цветовые гармонии
-    url: /color_harmonizer
-  - title: тг парсер
-    url: /tg
+  - title: telegram
+    url: https://t.me/chchch1234
+#  - title: трассировщик изображения
+#    url: /svgtracer
+#  - title: цветовые гармонии
+#    url: /color_harmonizer
+#  - title: тг парсер
+#    url: /tg

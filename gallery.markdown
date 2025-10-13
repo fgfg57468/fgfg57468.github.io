@@ -6,4 +6,4 @@ permalink: /gallery
 
 ## архив
 
-{% include gallery.html %}
+{% include gallery_init.html %}

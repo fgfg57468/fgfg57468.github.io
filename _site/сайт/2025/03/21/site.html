@@ -22,39 +22,84 @@
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Демид Морозов" /></head>
 <body><style>
   .site-header {
-    
     top: 0;
     width: 100%;
     z-index: 1000;
-    background: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background: transparent;
+    box-shadow: none;
+    border-top: none;
+    border-bottom: none;
   }
 
   /* Стили для мобильных */
   @media (max-width: 767px) {
     .site-header {
-    visibility: hidden;
-  }
+      visibility: hidden;
+    }
+    
+    /* Фиксированная кнопка меню */
+    .menu-toggle {
+      visibility: visible;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 1001;
+      background: transparent;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .menu-toggle:hover {
+      background: #f8f9fa;
+      transform: scale(1.05);
+    }
+    
+    .menu-toggle .bi {
+      font-size: 2em;
+      color: #333;
+    }
+    
     .site-nav {
       visibility: visible;
       padding: 0px;
     }
     
+    .nav-trigger {
+      display: none;
+    }
+    
     .nav-trigger:checked ~ .trigger {
       display: flex;
       flex-direction: column;
-      position: sticky;
-      top: 100%;
+      position: fixed;
+      top: 80px;
       left: 0;
       width: 100%;
-      background: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      background: transparent;
+      box-shadow: none;
+      padding: 20px 0;
+    }
+    
+    .nav-trigger:not(:checked) ~ .trigger {
+      display: none;
     }
   }
 
   /* Стили для десктопов */
   @media (min-width: 768px) {
-    .site-nav{
+    .menu-toggle {
+      display: none;
+    }
+    
+    .site-nav {
       display: flex;
       justify-content: center; 
       float: none;
@@ -63,29 +108,46 @@
 
   /* Отступ для контента */
   main {
-    margin-top: 0px; /* подстройте под высоту меню */
+    margin-top: 0px;
   }
 </style>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bad+Script&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
 <header class="site-header" role="banner">
   <nav class="site-nav">
-    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
-    <!-- The label for the checkbox is often here. It's missing from your code. -->
-    <label for="nav-trigger">
-      <!-- Icon or the word "Menu" goes here -->
+    <!-- Кнопка меню для мобильных -->
+    <label for="nav-trigger" class="menu-toggle">
+      <i class="bi bi-list"></i>
     </label>
+    
+    <input type="checkbox" id="nav-trigger" class="nav-trigger" />
 
     <div class="trigger">
       
-        <a class="page-link" href="/">главная</a>
+        <a class="page-link" href="/" title="главная">
+          <i class="bi bi-house-door"></i>
+        </a>
       
-        <a class="page-link" href="/blog">блог</a>
+        <a class="page-link" href="/blog" title="блог">
+          <i class="bi bi-journal-text"></i>
+        </a>
       
-        <a class="page-link" href="/gallery">галерея</a>
+        <a class="page-link" href="/gallery" title="галерея">
+          <i class="bi bi-images"></i>
+        </a>
       
-        <a class="page-link" href="https://t.me/chchch1234">telegram</a>
+        <a class="page-link" href="https://t.me/chchch1234" title="telegram">
+          <i class="bi bi-telegram"></i>
+        </a>
       
-        <a class="page-link" href="https://www.instagram.com/catto_painter">instagram</a>
+        <a class="page-link" href="https://www.instagram.com/catto_painter" title="instagram">
+          <i class="bi bi-instagram"></i>
+        </a>
       
     </div>
   </nav>

@@ -39,10 +39,10 @@
     /* Фиксированная кнопка меню */
     .menu-toggle {
       visibility: visible;
-      position: fixed;
-      top: 0px;
-      right: 0px;
-      z-index: 1001;
+      position: relative;
+      top: none;
+      right: none;
+      z-index: 1010;
       background: transparent;
       border: none;
       border-radius: 0%;
@@ -71,6 +71,8 @@
     .site-nav {
       visibility: visible;
       padding: 0px;
+      background-color: transparent;
+      border: none;
     }
     
     .nav-trigger {
@@ -81,7 +83,7 @@
     .nav-trigger:checked ~ .trigger {
       display: flex;
       flex-direction: column;
-      position: fixed;
+      position: relative;
       top: 80px;
       left: 0;
       width: 100%;

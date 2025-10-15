@@ -53,6 +53,9 @@ kramdown:
   input: GFM
   show_warnings: true
 
+sass:
+  sass_dir: _sass
+
 nav:
   - title: главная
     url: /

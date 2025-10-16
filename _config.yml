@@ -53,8 +53,6 @@ kramdown:
   input: GFM
   show_warnings: true
 
-sass:
-  sass_dir: _sass
 
 nav:
   - title: главная
@@ -67,6 +65,7 @@ nav:
     url: https://t.me/chchch1234
   - title: instagram
     url: https://www.instagram.com/catto_painter
+    
 #  - title: трассировщик изображения
 #    url: /svgtracer
 #  - title: цветовые гармонии

@@ -186,6 +186,9 @@
     <!-- Подключение Galleria -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/classic/galleria.classic.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.css" />
+    <link rel="stylesheet" href="/uploads/galleria-1.6.1/miniml/galleria.miniml.css" />
+    <link rel="stylesheet" href="/uploads/galleria-1.6.1/twelve/galleria.twelve.css" />
+    <link rel="stylesheet" href="/uploads/galleria-1.6.1/azur/galleria.azur.css" />
     <style>
         /* Основные стили */
         .galleria-container { 
@@ -375,6 +378,30 @@
             padding: 2px 6px;
             border-radius: 10px;
         }
+
+
+        /* Медиа-запрос для мобильных устройств */
+        @media (max-width: 768px) {
+            .galleria-container {
+                height: 400px;
+            }
+        }
+
+        .galleria-theme-classic {
+            background: transparent;
+        }
+
+        .galleria-theme-classic .galleria-thumbnails-container {
+         bottom: auto;
+         }
+
+        .galleria-theme-classic .galleria-image-nav-left {
+            opacity: 0;
+        }
+
+         .galleria-theme-classic .galleria-image-nav-right {
+            opacity: 0;
+        }
     </style>
 </head>
 <body>
@@ -388,6 +415,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/galleria.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/classic/galleria.classic.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js"></script>
+    <script src="/uploads/galleria-1.6.1/miniml/galleria.miniml.js"></script>
+    <script src="/uploads/galleria-1.6.1/azur/galleria.azur.js"></script>
+    <script src="/uploads/galleria-1.6.1/twelve/galleria.twelve.js"></script>
 
     <script>
         // === КОНФИГУРАЦИЯ MASTODON ===
@@ -454,6 +484,11 @@
         function cleanExcessiveNewlines(text) {
             if (!text) return '';
             return text.replace(/\n{3,}/g, '\n\n');
+        }
+
+        // Функция для определения типа устройства
+        function isMobileDevice() {
+            return window.innerWidth <= 768;
         }
 
         // === ОСНОВНЫЕ ФУНКЦИИ ===
@@ -639,11 +674,16 @@
             
             setTimeout(() => {
                 try {
+                    // Определяем тему в зависимости от типа устройства
+                    const theme = isMobileDevice() ? 'classic' : 'azur';
+                    
                     Galleria.run(`#${containerId}`, { 
                         dataSource: galleriaData, 
                         responsive: true,
-                        theme: 'folio',
-                        height: 500
+                        theme: theme,
+                        height: 500,
+                        imageCrop: false,
+                        autoplay:true
                     });
                 } catch (error) {
                     console.error(`Ошибка Galleria:`, error);

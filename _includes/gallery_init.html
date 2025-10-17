@@ -1,9 +1,38 @@
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/galleria.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
 
 <style>
-    .galleria{ width: auto; height: 400px; background: #fff }
+    .galleria { 
+        width: 100%; 
+        max-width: 800px;
+        height: 500px; 
+        margin: 20px auto;
+        display: block; 
+        background: #fff;
+    }
+    
+    .post-group { 
+        margin: 30px 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+    }
+    
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .gallery-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
 </style>
 
 <head>
@@ -49,12 +78,12 @@
             const gallery = document.createElement('div');
 
             let context = document.createElement('div');
+            context.classList.add('post-group');
             context.inner += marked.parse('');
 
             gallery.classList.add('galleria');
             context.appendChild(gallery);
             post_content.append(context);
-
             
             imageUrls.forEach((src, index) => {
                 const img = document.createElement('img');

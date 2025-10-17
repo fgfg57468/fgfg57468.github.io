@@ -1,6 +1,5 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/galleria.min.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
 
 <style>
@@ -8,64 +7,61 @@
 </style>
 
 <head>
-
-<script>
-    window.onload = async function() {
-        const cid = 'Qmcgg62uZYYcARDZebK346LBtetiGuNsuHzRz6n9ntcqx9';
-        const cdnUrl = `https://black-obliged-cricket-162.mypinata.cloud/ipfs/${cid}`;
-        
-        try {
-            const response = await fetch(cdnUrl);
-            if (!response.ok) throw new Error('Failed to fetch');
+    <script>
+        window.onload = async function() {
+            const cid = 'Qmcgg62uZYYcARDZebK346LBtetiGuNsuHzRz6n9ntcqx9';
+            const cdnUrl = `https://black-obliged-cricket-162.mypinata.cloud/ipfs/${cid}`;
             
-            const content = await response.text();
-            const links = extractIpfsLinks(content);
-            createImageGallery(links);
+            try {
+                const response = await fetch(cdnUrl);
+                if (!response.ok) throw new Error('Failed to fetch');
+                
+                const content = await response.text();
+                const links = extractIpfsLinks(content);
+                createImageGallery(links);
 
-            Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js');
-            Galleria.run('.galleria', { theme: 'folio' });
+                Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js');
+                Galleria.run('.galleria', { theme: 'folio' });
 
-        } catch (error) {
-            console.error('Ошибка:', error.message);
-        }
-    };
-
-    function extractIpfsLinks(html) {
-        const regex = /href=["']\/ipfs\/([^"']+)["']/g;
-        const matches = [];
-        let match;
-        
-        while ((match = regex.exec(html)) !== null) {
-            const path = match[1];
-            const cleanPath = path.split('?')[0];
-            
-            if (/\.(jpg|jpeg|png|gif|webp)$/i.test(cleanPath)) {
-                matches.push(`https://black-obliged-cricket-162.mypinata.cloud/ipfs/${cleanPath}`);
+            } catch (error) {
+                console.error('Ошибка:', error.message);
             }
+        };
+
+        function extractIpfsLinks(html) {
+            const regex = /href=["']\/ipfs\/([^"']+)["']/g;
+            const matches = [];
+            let match;
+            
+            while ((match = regex.exec(html)) !== null) {
+                const path = match[1];
+                const cleanPath = path.split('?')[0];
+                
+                if (/\.(jpg|jpeg|png|gif|webp)$/i.test(cleanPath)) {
+                    matches.push(`https://black-obliged-cricket-162.mypinata.cloud/ipfs/${cleanPath}`);
+                }
+            }
+            return matches;
         }
-        return matches;
-    }
 
-    function createImageGallery(imageUrls) {
-        const post_content = document.querySelector('.post-content');
-        const gallery = document.createElement('div');
+        function createImageGallery(imageUrls) {
+            const post_content = document.querySelector('.post-content');
+            const gallery = document.createElement('div');
 
-        let context = document.createElement('div');
-        context.inner += marked.parse('');
+            let context = document.createElement('div');
+            context.inner += marked.parse('');
 
-        gallery.classList.add('galleria');
-        context.appendChild(gallery);
-        post_content.append(context);
+            gallery.classList.add('galleria');
+            context.appendChild(gallery);
+            post_content.append(context);
 
-        
-        imageUrls.forEach((src, index) => {
-            const img = document.createElement('img');
-            img.src = src;
-            img.alt = `Изображение ${index + 1}`;
-            gallery.appendChild(img);
-        });
-
-    }
-</script>
-
+            
+            imageUrls.forEach((src, index) => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = `Изображение ${index + 1}`;
+                gallery.appendChild(img);
+            });
+        }
+    </script>
 </head>

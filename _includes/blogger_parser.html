@@ -1,0 +1,770 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blogger Parser</title>
+    <!-- Подключение Galleria -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/classic/galleria.classic.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.css">
+    <style>
+        /* Основные стили */
+        .galleria-container { 
+            width: 100%; 
+            max-width: 800px;
+            height: 500px; 
+            margin: 20px auto;
+            display: block; 
+        }
+        
+        .post-group { 
+            margin: 30px 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .single-post {
+            margin: 30px 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .hidden { display: none; }
+        .no-title { color: #999; font-style: italic; }
+        .error { color: red; padding: 10px; background: #ffe6e6; border-radius: 5px; margin: 20px 0; }
+        
+        .post-text {
+            white-space: pre-wrap;
+            font-family: inherit;
+            line-height: 1.4;
+            text-align: justify;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: none;
+            box-sizing: border-box;
+        }
+        
+        /* Загрузка */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007cba;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        .loading-text {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .no-images {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 10px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        /* Заголовки */
+        .post-group h3, .single-post h3 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        /* Статистика */
+        .main-container > div:last-child {
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Галерея */
+        .gallery-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* Список постов */
+        .posts-index {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .posts-index h2 {
+            text-align: center;
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007cba;
+            padding-bottom: 10px;
+        }
+        
+        .posts-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .posts-list li {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s;
+        }
+        
+        .posts-list li:hover {
+            background-color: #e9ecef;
+        }
+        
+        .posts-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .post-link {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .post-link:hover {
+            color: #007cba;
+        }
+        
+        .post-date {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Кнопка возврата */
+        .back-to-index {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #007cba;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background-color 0.2s;
+        }
+        
+        .back-to-index:hover {
+            background: #005a87;
+        }
+        
+        .hashtag-indicator {
+            font-size: 0.75em;
+            color: #007cba;
+            margin-left: 8px;
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div id="posts-index-container"></div>
+        <div id="blogger-posts-container"></div>
+    </div>
+
+    <!-- Подключение библиотек -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/galleria.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/classic/galleria.classic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js"></script>
+
+    <script>
+        // === КОНФИГУРАЦИЯ BLOGGER ===
+        const BLOGGER_CONFIG = {
+            blogId: '5643800133522714613',
+            apiKey: 'AIzaSyDniHfZdRqqRdUQRV6kvKc4zuDKVLaTaQM',
+            maxResults: 40
+        };
+
+        // === CORS ПРОКСИ ===
+        const CORS_PROXIES = [
+            'https://api.allorigins.win/raw?url=',
+            'https://cors-anywhere.herokuapp.com/',
+            'https://corsproxy.io/?',
+            ''
+        ];
+
+        // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+        async function fetchWithCorsProxy(url, proxyIndex = 0) {
+            if (proxyIndex >= CORS_PROXIES.length) {
+                throw new Error('Все CORS прокси не сработали');
+            }
+            
+            const proxyUrl = CORS_PROXIES[proxyIndex] + encodeURIComponent(url);
+            
+            try {
+                console.log(`Пробуем прокси: ${CORS_PROXIES[proxyIndex] || 'прямой запрос'}`);
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data;
+                
+            } catch (error) {
+                console.warn(`Прокси ${proxyIndex} не сработал:`, error.message);
+                return fetchWithCorsProxy(url, proxyIndex + 1);
+            }
+        }
+
+        function formatDate(dateValue) {
+            try {
+                const date = new Date(dateValue);
+                return date.toLocaleDateString('ru-RU', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch (error) {
+                console.error('Ошибка форматирования даты:', error);
+                return 'Дата неизвестна';
+            }
+        }
+
+        function scrollToElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function parseNumberedCaptions(text) {
+            const captions = [];
+            const regex = /(?:^|\n)(\d+)\.\s+([^\n]+)/g;
+            
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+                const number = parseInt(match[1]);
+                let captionText = match[2].trim();
+                captionText = captionText.replace(/#[\w\u0410-\u044F\u0401\u0451]+/gi, '').trim();
+                
+                if (captionText) {
+                    captions.push({
+                        number: number,
+                        text: captionText
+                    });
+                }
+            }
+            
+            return captions.sort((a, b) => a.number - b.number);
+        }
+
+        function cleanHtmlPreservingFormatting(html) {
+            if (!html) return '';
+            
+            let text = html
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/p>/gi, '\n\n')
+                .replace(/<\/div>/gi, '\n')
+                .replace(/<[^>]*>/g, '')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"');
+            
+            return text;
+        }
+
+        function cleanExcessiveNewlines(text) {
+            if (!text) return '';
+            return text.replace(/\n{3,}/g, '\n\n');
+        }
+
+        // === ОСНОВНЫЕ ФУНКЦИИ ===
+        async function fetchAllBloggerPosts(config) {
+            try {
+                console.log('Загружаем все посты из Blogger...');
+                const url = `https://www.googleapis.com/blogger/v3/blogs/${config.blogId}/posts?key=${config.apiKey}&maxResults=${config.maxResults}`;
+                
+                const data = await fetchWithCorsProxy(url);
+                
+                console.log(`Получено постов: ${data.items.length}`);
+                return data.items;
+                
+            } catch (error) {
+                console.error('Ошибка при загрузке из Blogger:', error);
+                throw new Error(`Не удалось загрузить данные: ${error.message}`);
+            }
+        }
+
+        function extractImagesFromHtml(html) {
+            if (!html) return [];
+            
+            const images = [];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const imgElements = doc.querySelectorAll('img');
+            
+            imgElements.forEach(img => {
+                const src = img.src;
+                if (src && !src.includes('blogger.com/img/blank.gif')) {
+                    images.push(src);
+                }
+            });
+            
+            return images;
+        }
+
+        function processBloggerPosts(posts) {
+            const processedPosts = posts.map(post => {
+                const hashtagRegex = /#[\w\u0410-\u044F\u0401\u0451]+/gi;
+                const hashtags = post.content ? (post.content.match(hashtagRegex) || []).map(tag => tag.toLowerCase()) : [];
+                
+                const images = extractImagesFromHtml(post.content);
+                let cleanText = cleanHtmlPreservingFormatting(post.content);
+
+                let titleFromStars = post.title || '';
+                const numberedCaptions = parseNumberedCaptions(cleanText);
+
+                let finalText = cleanText.replace(/#[\w\u0410-\u044F\u0401\u0451]+/gi, '');
+                finalText = cleanExcessiveNewlines(finalText).trim();
+
+                return {
+                    id: post.id,
+                    url: post.url,
+                    datetime: post.published,
+                    text: finalText,
+                    hashtags: hashtags,
+                    images: images,
+                    timestamp: new Date(post.published).getTime(),
+                    titleFromStars: titleFromStars,
+                    numberedCaptions: numberedCaptions
+                };
+            });
+
+            return processedPosts;
+        }
+
+        function groupPostsByHashtags(posts) {
+            const groups = {};
+            let renderOrderPost = null;
+            const singlePosts = [];
+            
+            posts.forEach(post => {
+                if (post.hashtags.includes('порядок_рендеринга')) {
+                    if (!renderOrderPost || post.timestamp > renderOrderPost.timestamp) {
+                        renderOrderPost = post;
+                    }
+                    return;
+                }
+                
+                if (post.hashtags.length > 0) {
+                    const groupHashtags = post.hashtags.filter(tag => tag !== 'порядок_рендеринга');
+                    if (groupHashtags.length === 0) return;
+
+                    const groupKey = groupHashtags.sort().join('|');
+                    if (!groups[groupKey]) {
+                        groups[groupKey] = { 
+                            hashtags: groupHashtags, 
+                            posts: [], 
+                            combinedText: '', 
+                            allImages: [],
+                            allImageCaptions: [],
+                            title: '',
+                            allNumberedCaptions: [],
+                            timestamp: 0,
+                            lastPostDate: null
+                        };
+                    }
+                    groups[groupKey].posts.push(post);
+                    if (post.timestamp > groups[groupKey].timestamp) {
+                        groups[groupKey].timestamp = post.timestamp;
+                        groups[groupKey].lastPostDate = post.datetime;
+                    }
+                } else {
+                    singlePosts.push(post);
+                }
+            });
+
+            console.log(`Постов с хештегами: ${Object.keys(groups).length}, одиночных постов: ${singlePosts.length}`);
+
+            Object.values(groups).forEach(group => {
+                group.posts.sort((a, b) => a.timestamp - b.timestamp);
+                
+                const nonEmptyTexts = group.posts
+                    .map(post => post.text ? post.text.trim() : '')
+                    .filter(text => text.length > 0);
+                
+                if (nonEmptyTexts.length > 0) {
+                    group.combinedText = nonEmptyTexts.join('\n\n');
+                    group.combinedText = cleanExcessiveNewlines(group.combinedText);
+                } else {
+                    group.combinedText = '';
+                }
+                
+                const allGroupCaptions = [];
+                group.posts.forEach(post => {
+                    const postCaptions = parseNumberedCaptions(post.text);
+                    allGroupCaptions.push(...postCaptions);
+                });
+                
+                const uniqueCaptions = [];
+                const usedNumbers = new Set();
+                
+                allGroupCaptions.sort((a, b) => a.number - b.number).forEach(caption => {
+                    if (!usedNumbers.has(caption.number)) {
+                        uniqueCaptions.push(caption);
+                        usedNumbers.add(caption.number);
+                    }
+                });
+                
+                group.allNumberedCaptions = uniqueCaptions;
+                
+                group.allImages = [];
+                group.allImageCaptions = [];
+                
+                group.posts.forEach(post => {
+                    post.images.forEach((imageUrl, index) => {
+                        group.allImages.push(imageUrl);
+                        const globalImageIndex = group.allImages.length - 1;
+                        let caption = '';
+                        if (group.allNumberedCaptions && group.allNumberedCaptions.length > globalImageIndex) {
+                            const captionData = group.allNumberedCaptions[globalImageIndex];
+                            caption = `${captionData.number}. ${captionData.text}`;
+                        } else {
+                            caption = `${globalImageIndex + 1}. Изображение ${globalImageIndex + 1}`;
+                        }
+                        group.allImageCaptions.push(caption);
+                    });
+                });
+                
+                if (group.posts.length > 0) {
+                    const firstPost = group.posts[0];
+                    if (firstPost.titleFromStars) {
+                        group.title = firstPost.titleFromStars;
+                    } else {
+                        const firstLine = firstPost.text.split('\n')[0];
+                        const cleanTitle = firstLine.replace(/#[\w\u0410-\u044F\u0401\u0451]+/gi, '').trim();
+                        group.title = cleanTitle || 'Название отсутствует';
+                    }
+                } else {
+                    group.title = 'Название отсутствует';
+                }
+            });
+
+            return { 
+                groups: groups, 
+                singlePosts: singlePosts,
+                renderOrderPost: renderOrderPost 
+            };
+        }
+
+        function initGalleriaForContainer(containerId, images, captions, title) {
+            const container = document.getElementById(containerId);
+            if (images.length === 0) { 
+                console.log('Нет изображений для галереи'); 
+                return; 
+            }
+            
+            const galleriaContainer = container.querySelector('.galleria-container');
+            if (galleriaContainer) {
+                galleriaContainer.style.minHeight = '400px';
+                galleriaContainer.style.height = '500px';
+            }
+            
+            const galleriaData = images.map((imgUrl, index) => {
+                const imageCaption = captions && captions[index] ? captions[index] : `${index + 1}. Изображение ${index + 1}`;
+                
+                return {
+                    image: imgUrl,
+                    title: imageCaption
+                };
+            });
+            
+            setTimeout(() => {
+                try {
+                    const containerElem = document.getElementById(containerId);
+                    if (containerElem && containerElem.offsetHeight > 10 && containerElem.offsetWidth > 10) {
+                        Galleria.run(`#${containerId}`, { 
+                            dataSource: galleriaData, 
+                            responsive: true,
+                            theme: 'folio',
+                            height: 500,
+                            wait: true
+                        });
+                        console.log(`Galleria инициализирована для ${containerId} с ${images.length} изображениями`);
+                    } else {
+                        console.warn(`Контейнер ${containerId} не готов, повторная попытка...`);
+                        setTimeout(() => initGalleriaForContainer(containerId, images, captions, title), 1000);
+                    }
+                } catch (error) {
+                    console.error(`Ошибка при инициализации Galleria для ${containerId}:`, error);
+                    setTimeout(() => {
+                        try {
+                            Galleria.run(`#${containerId}`, { 
+                                dataSource: galleriaData, 
+                                responsive: true,
+                                height: 500,
+                                width: 800
+                            });
+                        } catch (retryError) {
+                            console.error(`Повторная ошибка при инициализации Galleria:`, retryError);
+                        }
+                    }, 500);
+                }
+            }, 300);
+        }
+
+        function createCaptionsForSinglePost(post) {
+            const captions = [];
+            post.images.forEach((imageUrl, index) => {
+                let caption = '';
+                if (post.numberedCaptions && post.numberedCaptions.length > index) {
+                    const captionData = post.numberedCaptions[index];
+                    caption = `${captionData.number}. ${captionData.text}`;
+                } else {
+                    caption = `${index + 1}. Изображение ${index + 1}`;
+                }
+                captions.push(caption);
+            });
+            return captions;
+        }
+
+        // === ГЛАВНАЯ ФУНКЦИЯ ===
+        async function initBloggerParser(containerId, config = {}) {
+            const finalConfig = { ...BLOGGER_CONFIG, ...config };
+            const container = document.getElementById(containerId);
+            const indexContainer = document.getElementById('posts-index-container');
+            
+            if (!container || !indexContainer) { 
+                console.error(`Контейнер не найден`); 
+                return; 
+            }
+            
+            container.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Загрузка постов из Blogger...</div>
+                </div>
+            `;
+            
+            indexContainer.innerHTML = '';
+            
+            try {
+                const rawPosts = await fetchAllBloggerPosts(finalConfig);
+                
+                if (rawPosts.length === 0) { 
+                    container.innerHTML = '<div class="error">Посты не найдены</div>'; 
+                    return; 
+                }
+                
+                const processedPosts = processBloggerPosts(rawPosts);
+                const { groups, singlePosts, renderOrderPost } = groupPostsByHashtags(processedPosts);
+                
+                container.innerHTML = '';
+                indexContainer.innerHTML = '';
+                
+                const allDisplayItems = [];
+                
+                Object.values(groups).forEach((group, index) => {
+                    if (!group.combinedText && group.allImages.length === 0) return;
+                    
+                    allDisplayItems.push({
+                        type: 'group',
+                        id: `group-${index}`,
+                        title: group.title,
+                        timestamp: group.timestamp,
+                        displayDate: group.lastPostDate || (group.posts.length > 0 ? group.posts[group.posts.length - 1].datetime : null),
+                        data: group,
+                        displayIndex: index
+                    });
+                });
+                
+                singlePosts.forEach((post, index) => {
+                    if (!post.text && post.images.length === 0) return;
+                    
+                    let title = post.titleFromStars;
+                    if (!title) {
+                        const firstLine = post.text.split('\n')[0];
+                        const cleanTitle = firstLine.replace(/#[\w\u0410-\u044F\u0401\u0451]+/gi, '').trim();
+                        title = cleanTitle || 'Название отсутствует';
+                    }
+                    
+                    allDisplayItems.push({
+                        type: 'single',
+                        id: `single-post-${index}`,
+                        title: title,
+                        timestamp: post.timestamp,
+                        displayDate: post.datetime,
+                        data: post,
+                        displayIndex: index
+                    });
+                });
+                
+                allDisplayItems.sort((a, b) => b.timestamp - a.timestamp);
+                
+                const indexElement = document.createElement('div');
+                indexElement.className = 'posts-index';
+                indexElement.innerHTML = `
+                    <h2>Все посты</h2>
+                    <ul class="posts-list">
+                        ${allDisplayItems.map(item => `
+                            <li>
+                                <a class="post-link" onclick="scrollToElement('${item.id}')">
+                                    ${item.title}
+                                    ${item.type === 'group' ? '<span class="hashtag-indicator">группа</span>' : ''}
+                                </a>
+                                <div class="post-date">${formatDate(item.displayDate)}</div>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+                indexContainer.appendChild(indexElement);
+                
+                let totalDisplayed = 0;
+                
+                allDisplayItems.forEach((item, globalIndex) => {
+                    if ((item.type === 'group' && !item.data.combinedText && item.data.allImages.length === 0) ||
+                        (item.type === 'single' && !item.data.text && item.data.images.length === 0)) {
+                        return;
+                    }
+                    
+                    const element = document.createElement('div');
+                    
+                    if (item.type === 'group') {
+                        const group = item.data;
+                        const galleryId = `gallery-${item.displayIndex}`;
+                        
+                        element.className = 'post-group';
+                        element.id = item.id;
+                        
+                        const titleClass = group.title === 'Название отсутствует' ? 'no-title' : '';
+                        
+                        element.innerHTML = `
+                            <button class="back-to-index" onclick="scrollToElement('posts-index-container')">↑</button>
+                            <h3 class="${titleClass}">${group.title}</h3>
+                            ${group.combinedText ? `<div class="post-text">${group.combinedText}</div>` : ''}
+                            ${group.allImages.length > 0 ? 
+                                `<div class="gallery-wrapper"><div id="${galleryId}" class="galleria-container"></div></div>` : 
+                                '<div class="no-images">Нет изображений в этой группе</div>'
+                            }
+                        `;
+                        
+                        container.appendChild(element);
+                        
+                        if (group.allImages.length > 0) {
+                            initGalleriaForContainer(galleryId, group.allImages, group.allImageCaptions, group.title);
+                        }
+                    } else {
+                        const post = item.data;
+                        const galleryId = `single-gallery-${item.displayIndex}`;
+                        
+                        element.className = 'single-post';
+                        element.id = item.id;
+                        
+                        let title = post.titleFromStars;
+                        if (!title) {
+                            const firstLine = post.text.split('\n')[0];
+                            const cleanTitle = firstLine.replace(/#[\w\u0410-\u044F\u0401\u0451]+/gi, '').trim();
+                            title = cleanTitle || 'Название отсутствует';
+                        }
+                        
+                        const titleClass = title === 'Название отсутствует' ? 'no-title' : '';
+                        const imageCaptions = createCaptionsForSinglePost(post);
+                        
+                        element.innerHTML = `
+                            <button class="back-to-index" onclick="scrollToElement('posts-index-container')">↑</button>
+                            <h3 class="${titleClass}">${title}</h3>
+                            ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
+                            ${post.images.length > 0 ? 
+                                `<div class="gallery-wrapper"><div id="${galleryId}" class="galleria-container"></div></div>` : 
+                                '<div class="no-images">Нет изображений в этом посте</div>'
+                            }
+                        `;
+                        
+                        container.appendChild(element);
+                        
+                        if (post.images.length > 0) {
+                            initGalleriaForContainer(galleryId, post.images, imageCaptions, title);
+                        }
+                    }
+                    
+                    totalDisplayed++;
+                });
+                
+                const stats = document.createElement('div');
+                stats.innerHTML = `
+                    <p><small>
+                        Загружено групп с хештегами: ${Object.keys(groups).length}<br>
+                        Одиночных постов: ${singlePosts.length}<br>
+                        Всего отображено: ${totalDisplayed}
+                    </small></p>
+                `;
+                container.appendChild(stats);
+                
+            } catch (error) {
+                console.error('Критическая ошибка:', error);
+                container.innerHTML = `
+                    <div class="error">
+                        <strong>Ошибка загрузки данных:</strong><br>
+                        ${error.message}<br><br>
+                        <small>Проверьте настройки Blogger API и подключение к интернету. Проблема CORS может быть решена использованием прокси.</small>
+                    </div>
+                `;
+            }
+        }
+
+        // Запуск
+        document.addEventListener('DOMContentLoaded', () => initBloggerParser('blogger-posts-container'));
+    </script>
+</body>
+</html>

@@ -7,40 +7,41 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/classic/galleria.classic.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.css">
     <style>
-        /* Сбрасываем отступы по умолчанию */
-        
+        /* Основные стили */
         .galleria-container { 
             width: 100%; 
-            max-width: 800px; /* Ограничиваем максимальную ширину галереи */
-            height: 400px; 
-            margin: 20px auto; /* Центрируем галерею */
+            max-width: 800px;
+            height: 500px; 
+            margin: 20px auto;
             display: block; 
         }
+        
         .post-group { 
-            margin: none; 
-            padding: none; 
-            border: none; 
-            border-radius: none;
+            margin: 30px 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Центрируем все дочерние элементы */
-            padding-bottom: 3em;
+            align-items: center;
+            position: relative;
         }
+        
         .hidden { display: none; }
         .no-title { color: #999; font-style: italic; }
-        .error { color: red; padding: 10px; background: #ffe6e6; border-radius: 5px; }
+        .error { color: red; padding: 10px; background: #ffe6e6; border-radius: 5px; margin: 20px 0; }
+        
         .post-text {
             white-space: pre-wrap;
             font-family: inherit;
             line-height: 1.4;
             text-align: justify;
-            width: 100%; /* Занимает всю доступную ширину контейнера */
-            margin: 0 auto; /* Центрируем текстовый блок */
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
             padding: none;
             box-sizing: border-box;
         }
         
-        /* Новые стили для центрирования и загрузки */
+        /* Загрузка */
         .loading-container {
             display: flex;
             flex-direction: column;
@@ -73,7 +74,7 @@
         .main-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: none;
+            padding: 20px;
         }
         
         .no-images {
@@ -82,38 +83,127 @@
             font-style: italic;
             padding: 10px;
             width: 100%;
-            max-width: 800px; /* Такая же ширина как у галереи */
+            max-width: 800px;
         }
         
-        /* Центрируем заголовки групп */
+        /* Заголовки */
         .post-group h3 {
             text-align: center;
             margin-top: 0;
             margin-bottom: 15px;
             width: 100%;
-            max-width: 800px; /* Такая же ширина как у галереи */
+            max-width: 800px;
         }
         
-        /* Центрируем статистику в конце */
+        /* Статистика */
         .main-container > div:last-child {
             text-align: center;
+            padding: 20px;
         }
 
-        /* Стили для контейнера галереи */
+        /* Галерея */
         .gallery-wrapper {
             width: 100%;
             display: flex;
             justify-content: center;
-            padding-left: 9em;
+        }
+        
+        /* Список постов */
+        .posts-index {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .posts-index h2 {
+            text-align: center;
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007cba;
+            padding-bottom: 10px;
+        }
+        
+        .posts-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .posts-list li {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s;
+        }
+        
+        .posts-list li:hover {
+            background-color: #e9ecef;
+        }
+        
+        .posts-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .post-link {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .post-link:hover {
+            color: #007cba;
+        }
+        
+        .post-date {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Кнопка возврата */
+        .back-to-index {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #007cba;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background-color 0.2s;
+        }
+        
+        .back-to-index:hover {
+            background: #005a87;
+        }
+        
+        .hashtag-indicator {
+            font-size: 0.75em;
+            color: #007cba;
+            margin-left: 8px;
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
     <div class="main-container">
+        <div id="posts-index-container"></div>
         <div id="mastodon-posts-container"></div>
     </div>
 
-    <!-- Подключение бблиотек -->
+    <!-- Подключение библиотек -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/galleria.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/classic/galleria.classic.min.js"></script>
@@ -126,19 +216,31 @@
             account_id: '115350825601639031'
         };
 
-        // === УЛУЧШЕННАЯ ФУНКЦИЯ ДЛЯ ПАРСИНГА НУМЕРОВАННЫХ ПОДПИСЕЙ ===
+        // === ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function scrollToElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
         function parseNumberedCaptions(text) {
             const captions = [];
-            
-            // Более гибкое регулярное выражение для поиска нумерации в любом месте текста
             const regex = /(?:^|\n)(\d+)\.\s+([^\n]+)/g;
             
             let match;
             while ((match = regex.exec(text)) !== null) {
                 const number = parseInt(match[1]);
                 let captionText = match[2].trim();
-                
-                // Убираем хештеги из подписи
                 captionText = captionText.replace(/#[\w\u0410-\u044F\u0401\u0451]+/gi, '').trim();
                 
                 if (captionText) {
@@ -149,22 +251,19 @@
                 }
             }
             
-            // Сортируем по номеру для правильного порядка
             return captions.sort((a, b) => a.number - b.number);
         }
 
-        // === ФУНКЦИЯ ДЛЯ КОРРЕКТНОЙ ОЧИСТКИ HTML С СОХРАНЕНИЕМ ФОРМАТИРОВАНИЯ ===
         function cleanHtmlPreservingFormatting(html) {
             if (!html) return '';
             
-            // Заменяем HTML теги переноса на соответствующие символы
             let text = html
-                .replace(/<br\s*\/?>/gi, '\n') // <br> -> перенос строки
-                .replace(/<\/p>/gi, '\n\n')    // </p> -> двойной перенос (новый параграф)
-                .replace(/<\/div>/gi, '\n')    // </div> -> перенос
-                .replace(/<[^>]*>/g, '')       // Удаляем все остальные HTML теги
-                .replace(/&nbsp;/g, ' ')       // Заменяем неразрывные пробелы
-                .replace(/&amp;/g, '&')        // Заменяем HTML entities
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/p>/gi, '\n\n')
+                .replace(/<\/div>/gi, '\n')
+                .replace(/<[^>]*>/g, '')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
                 .replace(/&lt;/g, '<')
                 .replace(/&gt;/g, '>')
                 .replace(/&quot;/g, '"');
@@ -172,19 +271,15 @@
             return text;
         }
 
-        // === ФУНКЦИЯ ДЛЯ ОЧИСТКИ ЛИШНИХ ПЕРЕНОСОВ ===
         function cleanExcessiveNewlines(text) {
             if (!text) return '';
-            
-            // Заменяем 3 и более переносов подряд на 2 переноса
             return text.replace(/\n{3,}/g, '\n\n');
         }
 
-        // === ОСНОВНАЯ ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ВСЕХ ПОСТОВ ИЗ MASTODON ===
+        // === ОСНОВНЫЕ ФУНКЦИИ ===
         async function fetchAllMastodonPosts(config) {
             try {
-                console.log('Загружаем все посты из Mastodon...');
-                
+                console.log('Загружаем посты из Mastodon...');
                 const url = `${config.instance}/api/v1/accounts/${config.account_id}/statuses?limit=40`;
                 
                 const response = await fetch(url, {
@@ -202,28 +297,21 @@
                 return posts;
                 
             } catch (error) {
-                console.error('Ошибка при загрузке из Mastodon:', error);
+                console.error('Ошибка загрузки:', error);
                 throw new Error(`Не удалось загрузить данные: ${error.message}`);
             }
         }
 
-        // === ФУНКЦИЯ ОБРАБОТКИ ПОСТОВ MASTODON ===
         function processMastodonPosts(posts) {
-            const processedPosts = posts.map(post => {
-                // Извлекаем хештеги из тегов поста
+            return posts.map(post => {
                 const hashtags = post.tags ? post.tags.map(tag => tag.name.toLowerCase()) : [];
-                
-                // Извлекаем изображения из медиавложений
                 const images = post.media_attachments 
                     ? post.media_attachments
                         .filter(media => media.type === 'image')
                         .map(media => media.url)
                     : [];
 
-                // Очищаем текст от HTML тегов с сохранением форматирования
                 let cleanText = cleanHtmlPreservingFormatting(post.content);
-
-                // === Извлечение заголовка из *звёздочек* ===
                 let titleFromStars = '';
                 const starMatch = cleanText.match(/\*([^*]+)\*/);
                 if (starMatch) {
@@ -231,20 +319,15 @@
                     cleanText = cleanText.replace(/\*[^*]+\*/, '');
                 }
 
-                // === Парсинг нумерованных подписей для картинок ===
                 const numberedCaptions = parseNumberedCaptions(cleanText);
-
-                // Убираем хештеги из текста поста, но сохраняем ВСЮ структуру и форматирование
                 let finalText = cleanText.replace(/#[\w\u0410-\u044F\u0401\u0451]+/gi, '');
-                
-                // Очищаем от лишних переносов в каждом отдельном посте
                 finalText = cleanExcessiveNewlines(finalText).trim();
 
                 return {
                     id: post.id,
                     url: post.url,
                     datetime: post.created_at,
-                    text: finalText, // Текст без хештегов, но с ВСЕМИ пробелами, табуляциями и переносами
+                    text: finalText,
                     hashtags: hashtags,
                     images: images,
                     timestamp: new Date(post.created_at).getTime(),
@@ -252,31 +335,24 @@
                     numberedCaptions: numberedCaptions
                 };
             });
-
-            return processedPosts;
         }
 
-        // === УЛУЧШЕННАЯ ФУНКЦИЯ ГРУППИРОВКИ ПО ХЕШТЕГАМ ===
         function groupPostsByHashtags(posts) {
             const groups = {};
             let renderOrderPost = null;
             
             const filteredPosts = posts.filter(post => {
                 if (post.hashtags.length === 0) return false;
-                
                 if (post.hashtags.includes('порядок_рендеринга')) {
                     if (!renderOrderPost || post.timestamp > renderOrderPost.timestamp) {
                         renderOrderPost = post;
                     }
                     return false;
                 }
-                
                 return true;
             });
 
-            console.log(`Постов после фильтрации: ${filteredPosts.length}`);
-
-            // Группируем отфильтрованные посты
+            // Группируем посты
             filteredPosts.forEach(post => {
                 const groupHashtags = post.hashtags.filter(tag => tag !== 'порядок_рендеринга');
                 if (groupHashtags.length === 0) return;
@@ -290,85 +366,74 @@
                         allImages: [],
                         allImageCaptions: [],
                         title: '',
-                        allNumberedCaptions: [] // Новое поле для всех нумерованных подписей группы
+                        allNumberedCaptions: [],
+                        latestTimestamp: 0,
+                        latestDate: null
                     };
                 }
                 groups[groupKey].posts.push(post);
+                
+                if (post.timestamp > groups[groupKey].latestTimestamp) {
+                    groups[groupKey].latestTimestamp = post.timestamp;
+                    groups[groupKey].latestDate = post.datetime;
+                }
             });
 
-            // Обрабатываем каждую группу
+            // Обрабатываем группы
             Object.values(groups).forEach(group => {
                 group.posts.sort((a, b) => a.timestamp - b.timestamp);
                 
-                // Объединяем тексты постов, фильтруя пустые и добавляя разумные разделители
                 const nonEmptyTexts = group.posts
                     .map(post => post.text ? post.text.trim() : '')
                     .filter(text => text.length > 0);
                 
                 if (nonEmptyTexts.length > 0) {
-                    // Объединяем с одним переносом между постами
                     group.combinedText = nonEmptyTexts.join('\n\n');
-                    
-                    // Очищаем от избыточных переносов в объединенном тексте
                     group.combinedText = cleanExcessiveNewlines(group.combinedText);
-                } else {
-                    group.combinedText = '';
                 }
                 
-                // === ВАЖНОЕ ИЗМЕНЕНИЕ: Собираем ВСЕ нумерованные подписи из ВСЕХ постов группы ===
+                // Собираем подписи
                 const allGroupCaptions = [];
                 group.posts.forEach(post => {
                     const postCaptions = parseNumberedCaptions(post.text);
                     allGroupCaptions.push(...postCaptions);
                 });
                 
-                // Убираем дубликаты по номеру, сохраняя порядок
                 const uniqueCaptions = [];
                 const usedNumbers = new Set();
-                
                 allGroupCaptions.sort((a, b) => a.number - b.number).forEach(caption => {
                     if (!usedNumbers.has(caption.number)) {
                         uniqueCaptions.push(caption);
                         usedNumbers.add(caption.number);
                     }
                 });
-                
                 group.allNumberedCaptions = uniqueCaptions;
                 
-                // Собираем все изображения и их подписи
+                // Собираем изображения
                 group.allImages = [];
                 group.allImageCaptions = [];
-                
                 group.posts.forEach(post => {
                     post.images.forEach((imageUrl, index) => {
                         group.allImages.push(imageUrl);
-                        
-                        // Используем ГЛОБАЛЬНЫЙ индекс изображения во всей группе
                         const globalImageIndex = group.allImages.length - 1;
-                        
-                        // Ищем подпись из собранных нумерованных подписей группы
                         let caption = '';
                         if (group.allNumberedCaptions && group.allNumberedCaptions.length > globalImageIndex) {
                             const captionData = group.allNumberedCaptions[globalImageIndex];
                             caption = `${captionData.number}. ${captionData.text}`;
                         } else {
-                            // Fallback: используем последовательную нумерацию
                             caption = `${globalImageIndex + 1}. Изображение ${globalImageIndex + 1}`;
                         }
-                        
                         group.allImageCaptions.push(caption);
                     });
                 });
                 
-                // Извлекаем название из первого поста в группе
+                // Заголовок группы
                 if (group.posts.length > 0) {
                     const firstPost = group.posts[0];
                     if (firstPost.titleFromStars) {
                         group.title = firstPost.titleFromStars;
                     } else {
-                        // Берем первую строку без изменений
                         const firstLine = firstPost.text.split('\n')[0];
-                        // Убираем только хештеги из названия
                         const cleanTitle = firstLine.replace(/#[\w\u0410-\u044F\u0401\u0451]+/gi, '').trim();
                         group.title = cleanTitle || 'Название отсутствует';
                     }
@@ -380,18 +445,12 @@
             return { groups: groups, renderOrderPost: renderOrderPost };
         }
 
-        // === ФУНКЦИЯ ИНИЦИАЛИЗАЦИИ GALLERIA ДЛЯ КОНКРЕТНОГО КОНТЕЙНЕРА ===
         function initGalleriaForContainer(containerId, images, captions, groupTitle) {
             const container = document.getElementById(containerId);
-            if (images.length === 0) { 
-                console.log('Нет изображений для галереи'); 
-                return; 
-            }
+            if (images.length === 0) return;
             
-            // Создаем данные для Galleria с подписями
             const galleriaData = images.map((imgUrl, index) => {
                 const imageCaption = captions && captions[index] ? captions[index] : `${index + 1}. Изображение ${index + 1}`;
-                
                 return {
                     image: imgUrl,
                     title: imageCaption
@@ -403,30 +462,27 @@
                     Galleria.run(`#${containerId}`, { 
                         dataSource: galleriaData, 
                         responsive: true,
-                        theme: 'folio'
+                        theme: 'folio',
+                        height: 500
                     });
-                    console.log(`Galleria инициализирована для ${containerId} с ${images.length} изображениями`);
                 } catch (error) {
-                    console.error(`Ошибка при инициализации Galleria для ${containerId}:`, error);
+                    console.error(`Ошибка Galleria:`, error);
                 }
             }, 100);
         }
 
-        // === ГЛАВНАЯ ФУНКЦИЯ ИНИЦИАЛИЗАЦИИ ===
+        // === ГЛАВНАЯ ФУНКЦИЯ ===
         async function initMastodonParser(containerId, config = {}) {
             const finalConfig = { ...MASTODON_CONFIG, ...config };
             const container = document.getElementById(containerId);
+            const indexContainer = document.getElementById('posts-index-container');
             
-            if (!container) { 
-                console.error(`Контейнер не найден`); 
-                return; 
-            }
+            if (!container) return;
             
-            // Показываем индикатор загрузки
             container.innerHTML = `
                 <div class="loading-container">
                     <div class="loading-spinner"></div>
-                    <div class="loading-text"></div>
+                    <div class="loading-text">Загрузка постов из Mastodon...</div>
                 </div>
             `;
             
@@ -444,29 +500,52 @@
                 container.innerHTML = '';
                 
                 if (Object.keys(groups).length === 0) {
-                    container.innerHTML = '<div class="error">Нет подходящих постов для отображения</div>';
+                    container.innerHTML = '<div class="error">Нет подходящих постов</div>';
                     return;
                 }
+
+                // Создаем индекс
+                const groupsArray = Object.values(groups);
+                groupsArray.sort((a, b) => b.latestTimestamp - a.latestTimestamp);
                 
-                // Создаем контейнеры и галереи для каждой группы
-                Object.values(groups).forEach((group, index) => {
+                if (indexContainer) {
+                    const indexElement = document.createElement('div');
+                    indexElement.className = 'posts-index';
+                    indexElement.innerHTML = `
+                        <h2>Все посты</h2>
+                        <ul class="posts-list">
+                            ${groupsArray.map((group, index) => `
+                                <li>
+                                    <a class="post-link" onclick="scrollToElement('group-${index}')">
+                                        ${group.title}
+                                        <span class="hashtag-indicator">группа</span>
+                                    </a>
+                                    <div class="post-date">${formatDate(group.latestDate)}</div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    `;
+                    indexContainer.appendChild(indexElement);
+                }
+                
+                // Отображаем посты (от новых к старым)
+                groupsArray.forEach((group, index) => {
                     if (!group.combinedText && group.allImages.length === 0) return;
-                    
-                    const groupId = `group-${index}`;
-                    const galleryId = `gallery-${index}`;
                     
                     const groupElement = document.createElement('div');
                     groupElement.className = 'post-group';
-                    groupElement.id = groupId;
+                    groupElement.id = `group-${index}`;
                     
                     const titleClass = group.title === 'Название отсутствует' ? 'no-title' : '';
+                    const galleryId = `gallery-${index}`;
                     
                     groupElement.innerHTML = `
+                        <button class="back-to-index" onclick="scrollToElement('posts-index-container')">↑</button>
                         <h3 class="${titleClass}">${group.title}</h3>
                         ${group.combinedText ? `<div class="post-text">${group.combinedText}</div>` : ''}
                         ${group.allImages.length > 0 ? 
                             `<div class="gallery-wrapper"><div id="${galleryId}" class="galleria-container"></div></div>` : 
-                            '<div class="no-images">Нет изображений в этой группе</div>'
+                            '<div class="no-images">Нет изображений</div>'
                         }
                     `;
                     
@@ -478,22 +557,21 @@
                 });
                 
                 const stats = document.createElement('div');
-                stats.innerHTML = `<p><small>Загружено групп: ${Object.keys(groups).length}</small></p>`;
+                stats.innerHTML = `<p><small>Загружено групп: ${groupsArray.length}</small></p>`;
                 container.appendChild(stats);
                 
             } catch (error) {
-                console.error('Критическая ошибка:', error);
+                console.error('Ошибка:', error);
                 container.innerHTML = `
                     <div class="error">
-                        <strong>Ошибка загрузки данных:</strong><br>
-                        ${error.message}<br><br>
-                        <small>Проверьте токен доступа и подключение к интернету.</small>
+                        <strong>Ошибка загрузки:</strong><br>
+                        ${error.message}
                     </div>
                 `;
             }
         }
 
-        // Запуск после загрузки страницы
+        // Запуск
         document.addEventListener('DOMContentLoaded', () => initMastodonParser('mastodon-posts-container'));
     </script>
 </body>

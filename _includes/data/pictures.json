@@ -1,0 +1,12 @@
+{
+	"userPictures":	[{
+			"roomId":	"room_1",
+			"wall":	"west",
+			"texture":	"image1.png",
+			"x":	-4.8499999046325684,
+			"y":	2.25,
+			"z":	10.7351598739624,
+			"width":	0.05000000074505806,
+			"height":	1.5
+		}]
+}

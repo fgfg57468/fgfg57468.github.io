@@ -178,9 +178,7 @@
   </header>
 
   <div class="post-content">
-    <h2 id="архив">архив</h2>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/galleria.min.js"></script>
 
@@ -216,57 +214,62 @@
         display: flex;
         justify-content: center;
     }
+    
+    .loading {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+    }
+    
+    .error {
+        color: red;
+        text-align: center;
+        padding: 20px;
+    }
 </style>
 
 <head>
     <script>
+        const WORKER_URL = 'https://aged-term-4c5f.fgfg57468.workers.dev'; // Замени на свой URL Worker
+        
         window.onload = async function() {
-            const cid = 'Qmcgg62uZYYcARDZebK346LBtetiGuNsuHzRz6n9ntcqx9';
-            const cdnUrl = `https://black-obliged-cricket-162.mypinata.cloud/ipfs/${cid}`;
-            
             try {
-                const response = await fetch(cdnUrl);
-                if (!response.ok) throw new Error('Failed to fetch');
+                const response = await fetch(`${WORKER_URL}/ipfs-content`);
+                if (!response.ok) throw new Error('Failed to fetch from Worker');
                 
-                const content = await response.text();
-                const links = extractIpfsLinks(content);
-                createImageGallery(links);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                createImageGallery(data.images);
+                displayContent(data.content);
 
                 Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js');
                 Galleria.run('.galleria', { theme: 'folio' });
 
             } catch (error) {
                 console.error('Ошибка:', error.message);
+                showError(error.message);
             }
         };
 
-        function extractIpfsLinks(html) {
-            const regex = /href=["']\/ipfs\/([^"']+)["']/g;
-            const matches = [];
-            let match;
-            
-            while ((match = regex.exec(html)) !== null) {
-                const path = match[1];
-                const cleanPath = path.split('?')[0];
-                
-                if (/\.(jpg|jpeg|png|gif|webp)$/i.test(cleanPath)) {
-                    matches.push(`https://black-obliged-cricket-162.mypinata.cloud/ipfs/${cleanPath}`);
-                }
-            }
-            return matches;
-        }
-
         function createImageGallery(imageUrls) {
             const post_content = document.querySelector('.post-content');
+            if (!post_content) {
+                console.error('Element .post-content not found');
+                return;
+            }
+            
             const gallery = document.createElement('div');
-
-            let context = document.createElement('div');
+            const context = document.createElement('div');
+            
             context.classList.add('post-group');
-            context.inner += marked.parse('');
-
             gallery.classList.add('galleria');
+            
             context.appendChild(gallery);
-            post_content.append(context);
+            post_content.appendChild(context);
             
             imageUrls.forEach((src, index) => {
                 const img = document.createElement('img');
@@ -275,8 +278,36 @@
                 gallery.appendChild(img);
             });
         }
+        
+        function displayContent(content) {
+            const post_content = document.querySelector('.post-content');
+            if (!post_content) return;
+            
+            // Если нужно отобразить текстовый контент
+            const contentElement = document.createElement('div');
+            contentElement.innerHTML = marked.parse(content || '');
+            post_content.appendChild(contentElement);
+        }
+        
+        function showError(message) {
+            const post_content = document.querySelector('.post-content');
+            if (!post_content) return;
+            
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error';
+            errorElement.textContent = `Ошибка: ${message}`;
+            post_content.appendChild(errorElement);
+        }
     </script>
 </head>
+
+<body>
+    <div class="main-container">
+        <div class="post-content">
+            <div class="loading">Загрузка контента через Cloudflare Worker...</div>
+        </div>
+    </div>
+</body>
 
 
   </div>

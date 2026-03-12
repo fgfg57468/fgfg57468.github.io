@@ -1,4 +1,3 @@
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/galleria.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
@@ -33,64 +32,200 @@
         display: flex;
         justify-content: center;
     }
+    
+    .loading {
+        text-align: center;
+        color: #666;
+        font-size: 16px;
+        margin: 20px 0;
+    }
+    
+    .error {
+        text-align: center;
+        color: #d32f2f;
+        font-size: 16px;
+        margin: 20px 0;
+    }
 </style>
 
 <head>
     <script>
+        // Конфигурация Dropbox
+        const DROPBOX_CONFIG = {
+            accessToken: 'sl.u.AGGn3rOkA8LcQhmeuU_4GOhUAO8J8RZToJMawTXK99RMK3_gjiqxO27_6zbl-eyKV3lKHXyo8bD6YjvPyXkMyHYp3o7XTYIBTkamzGDQSnPf79W4TWXkX2S94Hfvb79lEOAqtnhYpGvFkYJu7zhOuFk8OSMSlHXDkk37ScoDWogELmyxZe6fmmlGn2qdF-0FHxHV0Wy0ha4geavooTPLykjgO4RwS5CXq1bqCPDreJPbCPSsRZrM-N38d_C9dHvoBbQyEWvjc5XCMCtGzNlCWtBwJK3Q-H-KmrwNYLJ-ArmUMx2byv9Qu4SrL-gOAgJsDuj9xMKCbsvl03r8tPyfALz7RNeyVSnjtWtgre3-DDLHuO-QB4_BPgfei7TtjklTRruarN6mwQzTHlz8_h_PSlLzXmGW7G0cjFonB1AX3DlIWgr7_2lW2mAJSazjJ1O498JGFWzbMV492-WxyoQMJHdujjDb9YTp_5AS0_Cz6WX_xYABbvp5f58ur0c9X_bQ1SQy9YrIueOB7Rz90c9V7HdzvfDKHhGLzFE29RL1y4oMj395EO7uToS0ktERPvQYqeaaie1W_9nBd9vY4-mVb3F-2gyCJsX0ovM7_59MVuJHgeGKLWqLkhZUhR3YFbEG2qz8C1elSTouLogptNLGFalqJjPLhYufOBkVPGdY6lQbR5jtYBLc9Ib7ovfOp6cN35nMgIh3DVJtQcB4S7-Auphu-iCeuTxqt6orfL-tQoh2TPbLlnmwvnriNk_Ju4OjxGEVnar5XEEfh_FiaeDG67KpARcRcgTgsdeN4Ln0gMQG90CSCILONnZLDCqWdrxjBjt2lopIIodGD7KHOkdNpP6Tvbz7Lx4A78VOmcFtKSIYYgDV2nCXsHJ5_5xwT7N80zLPantDDHOnFDISArFtuHyydeKZb0a2zPmSZsMxGvShmdsxUfQjqsjQNOR3Du0A1BRt42mC18N3XCsfmjYGn6MA2Mco_bYIkIgd1ugVDEZwrw_PT3dPnO_LAjChQBH_teO7QC5qImv7SycvXjwDJiCJ-2J3xm1edrnv4r9vQm0k44KyVZ54omTRh0RpZbH_dLtCvkc_MQOTJJ_QpEEbh7DC3ifltwPLNMT7LN5ux69mghdQHaMWJRO-e3XlkcPlErkQScsG0ofQB0SlYuLwEyN7zsQiNT4Ux7G78AY4tjaBuISRp0rNZnJdEKVcdjkZArEBREQRBjXtmq2NpvE27-AGPpYZ1DUwb5OtPNVWEP1YAkYRn8j9Xsa1JEZSvlxpO2d1Cqua_X5SQ5j30FGzLuVCkE-cLGnkOflaA6MIXwHGQU2tI8dNGdSzIj6ZzS675ZpVwDRTa73Qt7RlsCwZDbTx_O_87Hy--dr8NXeib8HR50-Ai_jc8SZnx_68vWfydNSFXkcpsZO6KGL6snSq-xKc', // Замените на ваш токен
+            folderPath: '/photos' // Путь к папке с изображениями в Dropbox
+        };
+
         window.onload = async function() {
-            const cid = 'Qmcgg62uZYYcARDZebK346LBtetiGuNsuHzRz6n9ntcqx9';
-            const cdnUrl = `https://black-obliged-cricket-162.mypinata.cloud/ipfs/${cid}`;
-            
             try {
-                const response = await fetch(cdnUrl);
-                if (!response.ok) throw new Error('Failed to fetch');
+                // Показываем загрузку
+                showLoading('Загрузка изображений из Dropbox...');
                 
-                const content = await response.text();
-                const links = extractIpfsLinks(content);
-                createImageGallery(links);
+                // Получаем список файлов из Dropbox
+                const imageUrls = await getDropboxImages();
+                
+                if (imageUrls.length === 0) {
+                    showError('Изображения не найдены в указанной папке Dropbox');
+                    return;
+                }
+                
+                // Создаем галерею
+                createImageGallery(imageUrls);
 
+                // Инициализируем Galleria
                 Galleria.loadTheme('https://cdnjs.cloudflare.com/ajax/libs/galleria/1.6.1/themes/folio/galleria.folio.min.js');
-                Galleria.run('.galleria', { theme: 'folio' });
-
+                Galleria.run('.galleria', { 
+                    theme: 'folio',
+                    responsive: true,
+                    imageCrop: true
+                });
+                
             } catch (error) {
-                console.error('Ошибка:', error.message);
+                console.error('Ошибка:', error);
+                showError('Ошибка загрузки галереи: ' + error.message);
             }
         };
 
-        function extractIpfsLinks(html) {
-            const regex = /href=["']\/ipfs\/([^"']+)["']/g;
-            const matches = [];
-            let match;
-            
-            while ((match = regex.exec(html)) !== null) {
-                const path = match[1];
-                const cleanPath = path.split('?')[0];
-                
-                if (/\.(jpg|jpeg|png|gif|webp)$/i.test(cleanPath)) {
-                    matches.push(`https://black-obliged-cricket-162.mypinata.cloud/ipfs/${cleanPath}`);
+        // Функция для получения изображений из Dropbox
+        async function getDropboxImages() {
+            try {
+                // Получаем список файлов в папке
+                const listResponse = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${DROPBOX_CONFIG.accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        path: DROPBOX_CONFIG.folderPath,
+                        include_media_info: true
+                    })
+                });
+
+                if (!listResponse.ok) {
+                    throw new Error(`Dropbox API error: ${listResponse.status}`);
                 }
+
+                const listData = await listResponse.json();
+                
+                // Фильтруем только изображения
+                const imageFiles = listData.entries.filter(entry => 
+                    entry['.tag'] === 'file' && 
+                    /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(entry.name)
+                );
+
+                // Получаем временные ссылки для каждого изображения
+                const imageUrls = [];
+                
+                for (const file of imageFiles) {
+                    const linkResponse = await fetch('https://api.dropboxapi.com/2/files/get_temporary_link', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${DROPBOX_CONFIG.accessToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            path: file.path_lower
+                        })
+                    });
+
+                    if (linkResponse.ok) {
+                        const linkData = await linkResponse.json();
+                        imageUrls.push({
+                            src: linkData.link,
+                            title: file.name,
+                            size: file.size
+                        });
+                    }
+                }
+
+                return imageUrls;
+                
+            } catch (error) {
+                console.error('Ошибка получения изображений из Dropbox:', error);
+                throw error;
             }
-            return matches;
         }
 
-        function createImageGallery(imageUrls) {
+        function createImageGallery(imageData) {
             const post_content = document.querySelector('.post-content');
+            if (!post_content) {
+                console.error('Элемент .post-content не найден');
+                return;
+            }
+
+            // Очищаем сообщения о загрузке/ошибках
+            clearMessages();
+
             const gallery = document.createElement('div');
+            const context = document.createElement('div');
 
-            let context = document.createElement('div');
             context.classList.add('post-group');
-            context.inner += marked.parse('');
-
             gallery.classList.add('galleria');
-            context.appendChild(gallery);
-            post_content.append(context);
             
-            imageUrls.forEach((src, index) => {
+            // Добавляем изображения в галерею
+            imageData.forEach((image, index) => {
                 const img = document.createElement('img');
-                img.src = src;
-                img.alt = `Изображение ${index + 1}`;
+                img.src = image.src;
+                img.alt = image.title || `Изображение ${index + 1}`;
+                img.setAttribute('data-title', image.title || '');
+                img.setAttribute('data-description', `Размер: ${formatFileSize(image.size)}`);
                 gallery.appendChild(img);
             });
+
+            context.appendChild(gallery);
+            post_content.appendChild(context);
+        }
+
+        // Вспомогательные функции
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function showLoading(message) {
+            clearMessages();
+            const post_content = document.querySelector('.post-content');
+            if (post_content) {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'loading';
+                loadingDiv.textContent = message;
+                post_content.appendChild(loadingDiv);
+            }
+        }
+
+        function showError(message) {
+            clearMessages();
+            const post_content = document.querySelector('.post-content');
+            if (post_content) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = message;
+                post_content.appendChild(errorDiv);
+            }
+        }
+
+        function clearMessages() {
+            const post_content = document.querySelector('.post-content');
+            if (post_content) {
+                const loading = post_content.querySelector('.loading');
+                const error = post_content.querySelector('.error');
+                if (loading) loading.remove();
+                if (error) error.remove();
+            }
         }
     </script>
 </head>
+
+<body>
+    <div class="main-container">
+        <div class="gallery-wrapper">
+            <div class="post-content">
+                <!-- Галерея будет создана здесь -->
+            </div>
+        </div>
+    </div>
+</body>

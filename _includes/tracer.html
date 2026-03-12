@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>SVG Color Zone Editor</title>
+
+    <script src="imagetracer_v1.2.6.js"></script>
+
+    <script>
+        
+        async function processImage() {
+          const fileInput = document.getElementById('fileInput');
+          if (!fileInput.files.length) return;
+
+          // Обработка всех выбранных файлов
+          for (let i = 0; i < fileInput.files.length; i++) {
+            const file = fileInput.files[i];
+            
+            // Загрузка изображения
+            const img = await loadImage(file);
+            
+            // Конвертация в SVG
+            const svgString = await convertToSVG(img);
+            
+            // Сохранение SVG с оригинальным именем файла
+            const originalName = file.name.replace(/\.[^/.]+$/, "");
+            saveAsSVG(svgString, originalName + '.svg');
+            
+            // Небольшая задержка между файлами
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+        }
+
+        // Загрузка изображения
+        function loadImage(file) {
+          return new Promise((resolve) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+              URL.revokeObjectURL(url); // Очистка памяти
+              resolve(img);
+            };
+            img.src = url;
+          });
+        }
+
+        // Конвертация в SVG
+        function convertToSVG(img) {
+          return new Promise((resolve) => {
+            ImageTracer.imageToSVG(
+              img.src,
+              (svgStr) => resolve(svgStr),
+              {
+                    // Tracing
+                    corsenabled : false,
+                    ltres : 1,
+                    qtres : 1,
+                    pathomit : 15,
+                    rightangleenhance : false,
+                    
+                    // Color quantization
+                    colorsampling : 2,
+                    numberofcolors : 2,
+                    mincolorratio : 0,
+                    colorquantcycles : 3,
+                    
+                    // Layering method
+                    layering : 0,
+                    
+                    // SVG rendering
+                    strokewidth : 0,
+                    linefilter : true,
+                    scale : 1,
+                    roundcoords : 1,
+                    viewbox : false,
+                    desc : false,
+                    lcpr : 0,
+                    qcpr : 0,
+                    
+                    // Blur
+                    blurradius : 5,
+                    blurdelta : 64
+                    
+                } // Настройки конвертации
+            );
+          });
+        }
+
+        // Сохранение SVG как файл
+        function saveAsSVG(svgString, filename) {
+          const blob = new Blob([svgString], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(blob);
+          
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 100);
+        }
+
+    </script>
+
+</head>
+<body>
+
+    <input type="file" id="fileInput" accept="image/*" multiple>
+    <button onclick="processImage()">Конвертировать и сохранить</button>
+    
+</body>
+</html>
